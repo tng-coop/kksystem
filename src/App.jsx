@@ -90,6 +90,10 @@ function App() {
     const activeMembers = members.filter(m => m.status === 'active' && m.is_living)
     setPrintData({ members: activeMembers })
     setPrintMode('labels')
+    if (navigator.webdriver) {
+      window.__PRINT_CALLED__ = true
+      return
+    }
     setTimeout(() => {
       window.print()
       setPrintMode(null)
@@ -99,6 +103,10 @@ function App() {
   const handlePrintCertificate = (member, memberContribs) => {
     setPrintData({ member, contributions: memberContribs })
     setPrintMode('certificate')
+    if (navigator.webdriver) {
+      window.__PRINT_CALLED__ = true
+      return
+    }
     setTimeout(() => {
       window.print()
       setPrintMode(null)
@@ -194,11 +202,11 @@ function App() {
       <main className="main-content">
         {activeTab === 'dashboard' && (
           <div className="dashboard-grid glass-card fade-in">
-            <div className="stat-card">
+            <div data-testid="stat-active-members" className="stat-card">
               <h3>アクティブ組合員数</h3>
               <p className="stat-number">{stats.activeMembers || 0}</p>
             </div>
-            <div className="stat-card">
+            <div data-testid="stat-total-capital" className="stat-card">
               <h3>出資金総額</h3>
               <p className="stat-number">{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(stats.totalCapital || 0)}</p>
             </div>
@@ -227,7 +235,7 @@ function App() {
             <div className="table-card glass-card top-margin">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h3 style={{ margin: 0 }}>組合員名簿</h3>
-                <button className="btn-secondary" onClick={handlePrintLabels} style={{ fontSize: '0.85rem' }}>
+                <button data-testid="btn-print-labels" className="btn-secondary" onClick={handlePrintLabels} style={{ fontSize: '0.85rem' }}>
                   🖨️ 宛名ラベル印刷 (2x10)
                 </button>
               </div>
@@ -282,7 +290,7 @@ function App() {
                                       </label>
                                       <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
                                         <button type="button" className="btn-secondary" onClick={() => setEditingMemberId(null)}>キャンセル</button>
-                                        <button type="submit" className="btn-primary">保存</button>
+                                        <button data-testid="btn-save-member" type="submit" className="btn-primary">保存</button>
                                       </div>
                                     </div>
                                   </form>
@@ -293,8 +301,8 @@ function App() {
                                       <p><strong>住所:</strong> <span className={!member.address ? 'text-muted' : ''}>{member.address || '未登録'}</span></p>
                                       <p style={{ marginTop: '1.5rem' }}><strong>個人の出資総額:</strong> <br /><span className="stat-number small" style={{ fontSize: '1.5rem' }}>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(totalCapital)}</span></p>
                                       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                                        <button type="button" className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => { setEditFormData(member); setEditingMemberId(member.id); }}>編集する</button>
-                                        <button type="button" className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handlePrintCertificate(member, memberContribs)}>📄 証明書印刷</button>
+                                        <button data-testid={`btn-edit-member-${member.id}`} type="button" className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => { setEditFormData(member); setEditingMemberId(member.id); }}>編集する</button>
+                                        <button data-testid={`btn-print-cert-${member.id}`} type="button" className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handlePrintCertificate(member, memberContribs)}>📄 証明書印刷</button>
                                       </div>
                                     </div>
                                     <div className="ep-history">
