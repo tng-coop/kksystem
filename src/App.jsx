@@ -1,5 +1,6 @@
 import { useState, useEffect, Fragment } from 'react'
 import './App.css'
+import { apiGetMembers, apiAddMember, apiUpdateMember, apiGetContributions, apiAddContribution, apiGetStats, isDemoMode } from './api.js'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -31,14 +32,14 @@ function App() {
   const fetchData = async () => {
     try {
       const [membersRes, contribRes, statsRes] = await Promise.all([
-        fetch('/api/members'),
-        fetch('/api/contributions'),
-        fetch('/api/stats')
+        apiGetMembers(),
+        apiGetContributions(),
+        apiGetStats()
       ])
 
-      setMembers(await membersRes.json())
-      setContributions(await contribRes.json())
-      setStats(await statsRes.json())
+      setMembers(membersRes)
+      setContributions(contribRes)
+      setStats(statsRes)
     } catch (error) {
       console.error("Error fetching data:", error)
     }
@@ -51,60 +52,36 @@ function App() {
   const handleAddMember = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch('/api/members', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMember)
-      })
-      if (response.ok) {
-        setNewMember({ name: '', email: '', join_date: new Date().toISOString().split('T')[0], address: '', is_living: true })
-        fetchData()
-      } else {
-        const error = await response.json()
-        alert(error.error)
-      }
+      await apiAddMember(newMember)
+      setNewMember({ name: '', email: '', join_date: new Date().toISOString().split('T')[0], address: '', is_living: true })
+      fetchData()
     } catch (error) {
       console.error("Error adding member:", error)
+      alert(error.message)
     }
   }
 
   const handleUpdateMember = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch(`/api/members/${editingMemberId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editFormData)
-      })
-      if (response.ok) {
-        setEditingMemberId(null)
-        fetchData()
-      } else {
-        const error = await response.json()
-        alert(error.error)
-      }
+      await apiUpdateMember(editingMemberId, editFormData)
+      setEditingMemberId(null)
+      fetchData()
     } catch (error) {
       console.error("Error updating member:", error)
+      alert(error.message)
     }
   }
 
   const handleAddContribution = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch('/api/contributions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newContribution)
-      })
-      if (response.ok) {
-        setNewContribution({ member_id: '', amount: '', pay_date: new Date().toISOString().split('T')[0], notes: '' })
-        fetchData()
-      } else {
-        const error = await response.json()
-        alert(error.error)
-      }
+      await apiAddContribution(newContribution)
+      setNewContribution({ member_id: '', amount: '', pay_date: new Date().toISOString().split('T')[0], notes: '' })
+      fetchData()
     } catch (error) {
       console.error("Error adding contribution:", error)
+      alert(error.message)
     }
   }
 
@@ -202,12 +179,15 @@ function App() {
       <div className="bg-orb orb-primary" />
       <div className="bg-orb orb-secondary" />
 
-      <header className="app-header">
-        <h1 className="logo">TNG Co-op <span>出資金管理システム</span></h1>
+      <header className="app-header" style={isDemoMode ? { borderBottom: '2px solid #ffcc00' } : {}}>
+        <h1 className="logo">
+          TNG Co-op <span>出資金管理システム</span>
+          {isDemoMode && <span className="demo-badge" style={{ marginLeft: '1rem', fontSize: '0.8rem', background: '#ffcc00', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '4px', verticalAlign: 'middle', fontWeight: 'bold', textShadow: 'none' }}>DEMO MODE</span>}
+        </h1>
         <nav className="nav-tabs">
-          <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => { setActiveTab('dashboard'); setExpandedMemberId(null); setEditingMemberId(null); }}>概要</button>
-          <button className={activeTab === 'members' ? 'active' : ''} onClick={() => { setActiveTab('members'); setExpandedMemberId(null); setEditingMemberId(null); }}>組合員名簿</button>
-          <button className={activeTab === 'contributions' ? 'active' : ''} onClick={() => { setActiveTab('contributions'); setExpandedMemberId(null); setEditingMemberId(null); }}>出資金履歴</button>
+          <button data-testid="tab-dashboard" className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => { setActiveTab('dashboard'); setExpandedMemberId(null); setEditingMemberId(null); }}>概要</button>
+          <button data-testid="tab-members" className={activeTab === 'members' ? 'active' : ''} onClick={() => { setActiveTab('members'); setExpandedMemberId(null); setEditingMemberId(null); }}>組合員名簿</button>
+          <button data-testid="tab-contributions" className={activeTab === 'contributions' ? 'active' : ''} onClick={() => { setActiveTab('contributions'); setExpandedMemberId(null); setEditingMemberId(null); }}>出資金履歴</button>
         </nav>
       </header>
 
@@ -231,15 +211,15 @@ function App() {
               <h3>新規登録</h3>
               <form onSubmit={handleAddMember}>
                 <div className="form-row" style={{ alignItems: 'center' }}>
-                  <input type="text" placeholder="氏名" required value={newMember.name} onChange={e => setNewMember({ ...newMember, name: e.target.value })} />
-                  <input type="email" placeholder="メールアドレス (任意)" value={newMember.email} onChange={e => setNewMember({ ...newMember, email: e.target.value })} />
-                  <input type="date" title="加入日 (任意)" value={newMember.join_date} onChange={e => setNewMember({ ...newMember, join_date: e.target.value })} />
-                  <input type="text" placeholder="住所 (任意)" value={newMember.address} onChange={e => setNewMember({ ...newMember, address: e.target.value })} />
+                  <input data-testid="input-new-member-name" type="text" placeholder="氏名" required value={newMember.name} onChange={e => setNewMember({ ...newMember, name: e.target.value })} />
+                  <input data-testid="input-new-member-email" type="email" placeholder="メールアドレス (任意)" value={newMember.email} onChange={e => setNewMember({ ...newMember, email: e.target.value })} />
+                  <input data-testid="input-new-member-date" type="date" title="加入日 (任意)" value={newMember.join_date} onChange={e => setNewMember({ ...newMember, join_date: e.target.value })} />
+                  <input data-testid="input-new-member-address" type="text" placeholder="住所 (任意)" value={newMember.address} onChange={e => setNewMember({ ...newMember, address: e.target.value })} />
                   <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
-                    <input type="checkbox" checked={newMember.is_living} onChange={e => setNewMember({ ...newMember, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
+                    <input data-testid="checkbox-new-member-living" type="checkbox" checked={newMember.is_living} onChange={e => setNewMember({ ...newMember, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
                     生存
                   </label>
-                  <button type="submit" className="btn-primary">登録</button>
+                  <button data-testid="btn-submit-new-member" type="submit" className="btn-primary">登録</button>
                 </div>
               </form>
             </div>
@@ -269,7 +249,7 @@ function App() {
                     const isEditing = editingMemberId === member.id;
                     return (
                       <Fragment key={member.id}>
-                        <tr onClick={() => toggleExpand(member.id)} className={`clickable-row ${isExpanded ? 'expanded-active' : ''}`}>
+                        <tr data-testid={`member-row-${member.id}`} onClick={() => toggleExpand(member.id)} className={`clickable-row ${isExpanded ? 'expanded-active' : ''}`}>
                           <td>#{member.id}</td>
                           <td><strong>{member.name}</strong></td>
                           <td className={!member.email ? 'text-muted' : ''}>{member.email || '-'}</td>
@@ -364,14 +344,14 @@ function App() {
               <h3>出資金の記録</h3>
               <form onSubmit={handleAddContribution}>
                 <div className="form-row">
-                  <select required value={newContribution.member_id} onChange={e => setNewContribution({ ...newContribution, member_id: e.target.value })}>
+                  <select data-testid="select-contrib-member" required value={newContribution.member_id} onChange={e => setNewContribution({ ...newContribution, member_id: e.target.value })}>
                     <option value="" disabled>組合員を選択...</option>
                     {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
-                  <input type="number" step="1" min="0" placeholder="金額 (Yen)" required value={newContribution.amount} onChange={e => setNewContribution({ ...newContribution, amount: e.target.value })} />
-                  <input type="date" required value={newContribution.pay_date} onChange={e => setNewContribution({ ...newContribution, pay_date: e.target.value })} />
-                  <input type="text" placeholder="備考 (任意)" value={newContribution.notes} onChange={e => setNewContribution({ ...newContribution, notes: e.target.value })} />
-                  <button type="submit" className="btn-primary">記録</button>
+                  <input data-testid="input-contrib-amount" type="number" step="1" min="0" placeholder="金額 (Yen)" required value={newContribution.amount} onChange={e => setNewContribution({ ...newContribution, amount: e.target.value })} />
+                  <input data-testid="input-contrib-date" type="date" required value={newContribution.pay_date} onChange={e => setNewContribution({ ...newContribution, pay_date: e.target.value })} />
+                  <input data-testid="input-contrib-notes" type="text" placeholder="備考 (任意)" value={newContribution.notes} onChange={e => setNewContribution({ ...newContribution, notes: e.target.value })} />
+                  <button data-testid="btn-submit-contrib" type="submit" className="btn-primary">記録</button>
                 </div>
               </form>
             </div>

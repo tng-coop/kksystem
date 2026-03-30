@@ -31,3 +31,13 @@ kksystem.db-shm
 kksystem.db-wal
 test-db.js
 run.bat
+
+# Environment Variables
+.env
+.env.local
+
+# Playwright Outputs
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
