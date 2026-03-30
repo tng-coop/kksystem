@@ -90,4 +90,90 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('tab-members').click();
     await expect(page.getByTestId('member-row-1')).toContainText('田中 修');
   });
+
+  test('Member Status Management (Deceased/Inactive)', async ({ page }) => {
+    await page.getByTestId('tab-members').click();
+    
+    // Open member 2 (佐藤 花子)
+    await page.getByTestId('member-row-2').click();
+    await page.locator('button:has-text("編集する")').click();
+
+    // Uncheck 'is_living'
+    const livingCheckbox = page.locator('.profile-edit-form input[type="checkbox"]');
+    await livingCheckbox.uncheck();
+
+    // Save changes
+    await page.locator('.profile-edit-form button:has-text("保存")').click();
+
+    // Verify '死亡' (Deceased) badge is rendered
+    await expect(page.getByTestId('member-row-2').locator('.status-badge.inactive').filter({ hasText: '死亡' })).toBeVisible();
+  });
+
+  test('Print UI Rendering (Labels & Certificates)', async ({ page }) => {
+    await page.getByTestId('tab-members').click();
+    
+    // Intercept setTimeout to artificially pause the 100ms print dialog so we can test the DOM reliably.
+    await page.evaluate(() => {
+      window.originalSetTimeout = window.setTimeout;
+      window.setTimeout = (fn, delay) => {
+        // Intercept the 100ms print delay specifically
+        if (delay === 100) {
+            window.__CONTINUE_PRINT__ = fn; 
+        } else {
+            return window.originalSetTimeout(fn, delay);
+        }
+      };
+      window.print = () => window.__PRINT_CALLED__ = true;
+    });
+
+    // Test Labels Print
+    await page.locator('button:has-text("宛名ラベル印刷")').click();
+    
+    // Check if the print-only labels grid rendered
+    await expect(page.locator('.print-only.labels-grid')).toBeAttached();
+    await expect(page.locator('.print-only.labels-grid .label-name').first()).toBeAttached();
+
+    // Now manually trigger the delayed function to complete the print lifecycle
+    await page.evaluate(() => window.__CONTINUE_PRINT__());
+    await expect(page.locator('.print-only.labels-grid')).not.toBeAttached();
+
+    // Reset our hooks for the next print
+    await page.evaluate(() => { window.__CONTINUE_PRINT__ = null; });
+
+    // Test Certificate Print (for member 1)
+    await page.getByTestId('member-row-1').click();
+    await page.locator('button:has-text("証明書印刷")').click();
+    
+    // Check if the print-only certificate page rendered
+    await expect(page.locator('.print-only.certificate-page')).toBeAttached();
+    await expect(page.locator('.print-only.certificate-page .cert-title')).toHaveText('出資証明書');
+
+    // Manually progress lifecycle
+    await page.evaluate(() => window.__CONTINUE_PRINT__());
+    await expect(page.locator('.print-only.certificate-page')).not.toBeAttached();
+
+    // Assert that our mocked window.print was indeed called 
+    const printCalled = await page.evaluate(() => window.__PRINT_CALLED__);
+    expect(printCalled).toBe(true);
+  });
+
+  test('Contribution Validation Edge Cases', async ({ page }) => {
+    await page.getByTestId('tab-contributions').click();
+
+    // Attempt to submit missing (empty) amount
+    await page.getByTestId('select-contrib-member').selectOption('1');
+    const inputAmount = page.getByTestId('input-contrib-amount');
+    
+    // The browser's native HTML5 validation will step in (required field).
+    // We can evaluate if the input is natively flagged invalid
+    await page.getByTestId('btn-submit-contrib').click();
+    let isAmountInvalid = await inputAmount.evaluate((el) => !el.checkValidity());
+    expect(isAmountInvalid).toBe(true);
+
+    // Provide a negative number
+    await inputAmount.fill('-5000');
+    await page.getByTestId('btn-submit-contrib').click();
+    isAmountInvalid = await inputAmount.evaluate((el) => !el.checkValidity());
+    expect(isAmountInvalid).toBe(true);
+  });
 });
