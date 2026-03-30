@@ -5,7 +5,8 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
   // Browser Contexts inherently completely isolate localStorage and cookies, guaranteeing zero 
   // cross-contamination even while running tests concurrently at blistering speeds!
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    // Navigate to relative root to preserve subfolder contexts (like GH Pages /kksystem/)
+    await page.goto('./');
     // Clear and reload to ensure the mock database initializes perfectly cleanly for this instance
     await page.evaluate(() => localStorage.clear());
     await page.reload();
