@@ -17,40 +17,85 @@ const saveData = (data) => {
 export const initDemoData = () => {
     if (loadData()) return;
 
-    // Seed Data
-    const seedMembers = [
-        { name: '田中 太郎', email: 'taro.tanaka@example.jp', join_date: '2023-04-01', address: '東京都渋谷区...', contribs: [{ amount: 50000, date: '2023-04-01', notes: '初期出資金' }, { amount: 10000, date: '2023-12-01', notes: '追加出資' }] },
-        { name: '佐藤 花子', email: 'hanako.sato@example.jp', join_date: '2023-05-15', address: '神奈川県横浜市...', contribs: [{ amount: 50000, date: '2023-05-15', notes: '初期出資金' }] },
-        { name: '鈴木 一郎', email: 'ichiro.suzuki@example.jp', join_date: '2022-10-01', address: '千葉県柏市...', contribs: [{ amount: 100000, date: '2022-10-01', notes: '初期出資金' }] }
+    if (import.meta.env.VITE_IS_E2E === 'true') {
+        // E2E Test Parity: Strictly 3 specific members, 210,000 total capital
+        const seedMembers = [
+            { name: '田中 太郎', email: 'taro.tanaka@example.jp', join_date: '2023-04-01', address: '東京都渋谷区...', contribs: [{ amount: 50000, date: '2023-04-01', notes: '初期出資金' }, { amount: 10000, date: '2023-12-01', notes: '追加出資' }] },
+            { name: '佐藤 花子', email: 'hanako.sato@example.jp', join_date: '2023-05-15', address: '神奈川県横浜市...', contribs: [{ amount: 50000, date: '2023-05-15', notes: '初期出資金' }] },
+            { name: '鈴木 一郎', email: 'ichiro.suzuki@example.jp', join_date: '2022-10-01', address: '千葉県柏市...', contribs: [{ amount: 100000, date: '2022-10-01', notes: '初期出資金' }] }
+        ];
+
+        let nextMemberId = 1; let nextContribId = 1;
+        const members = []; const contributions = [];
+
+        for (const seed of seedMembers) {
+            const memberId = nextMemberId++;
+            members.push({ id: memberId, name: seed.name, email: seed.email, join_date: seed.join_date, address: seed.address, is_living: 1, status: 'active', created_at: new Date().toISOString() });
+            for (const c of seed.contribs) contributions.push({ id: nextContribId++, member_id: memberId, amount: c.amount, pay_date: c.date, notes: c.notes, created_at: new Date().toISOString() });
+        }
+        saveData({ members, contributions, nextMemberId, nextContribId });
+        return;
+    }
+
+    // Rich Vis Generation: 20 members, 24-month span, highly dynamic
+    const names = [
+        '田中 太郎', 'Alexander Wright', '佐藤 花子', 'Emily Chen', '伊藤 健太', 
+        'David Miller', '山本 翔太', 'Sarah Johnson', '小林 大輔', 'Michael Kim',
+        '吉田 歩夢', 'Jessica Davis', '佐々木 翼', 'Daniel Garcia', '松本 蓮',
+        'Olivia Martinez', '木村 悠真', 'Sophia Taylor', '斎藤 拓海', 'James Wilson'
     ];
+    
+    let nextMemberId = 1; let nextContribId = 1;
+    const members = []; const contributions = [];
 
-    let nextMemberId = 1;
-    let nextContribId = 1;
-    const members = [];
-    const contributions = [];
+    const today = new Date();
+    // Deterministic random for visually stable demo charts
+    let seed = 8888;
+    const random = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    const randInt = (min, max) => Math.floor(random() * (max - min + 1)) + min;
 
-    for (const seed of seedMembers) {
+    for (let i = 0; i < names.length; i++) {
+        // Spread join dates intensely across the last 24 months
+        const monthsAgoJoined = randInt(1, i < 3 ? 24 : 20); 
+        const joinDate = new Date(today.getFullYear(), today.getMonth() - monthsAgoJoined, randInt(1, 28));
+
         const memberId = nextMemberId++;
+        const isDeceased = random() > 0.95; 
+        const isInactive = !isDeceased && random() > 0.85;
+        
         members.push({
-            id: memberId,
-            name: seed.name,
-            email: seed.email,
-            join_date: seed.join_date,
-            address: seed.address,
-            is_living: 1,
-            status: 'active',
-            created_at: new Date().toISOString()
+            id: memberId, name: names[i], email: `demo.member${memberId}@example.co.jp`,
+            join_date: joinDate.toISOString().split('T')[0],
+            address: `City / District ${randInt(1, 9)}...`,
+            is_living: isDeceased ? 0 : 1, status: isInactive ? 'inactive' : 'active',
+            created_at: joinDate.toISOString()
         });
 
-        for (const c of seed.contribs) {
-            contributions.push({
-                id: nextContribId++,
-                member_id: memberId,
-                amount: c.amount,
-                pay_date: c.date,
-                notes: c.notes,
-                created_at: new Date().toISOString()
-            });
+        // 1. Every single member drops Initial Capital
+        const initAmounts = [10000, 30000, 50000, 100000, 200000];
+        const monthlyAmounts = [5000, 10000, 20000];
+        
+        contributions.push({
+            id: nextContribId++, member_id: memberId,
+            amount: initAmounts[randInt(0, initAmounts.length - 1)],
+            pay_date: joinDate.toISOString().split('T')[0],
+            notes: 'Initial Capital', created_at: joinDate.toISOString()
+        });
+
+        // 2. Active recurrent funding
+        const isActiveSaver = random() > 0.4; // 60% of people contribute later
+        if (isActiveSaver && !isInactive && !isDeceased) {
+            for (let m = monthsAgoJoined - 1; m >= 0; m--) {
+                if (random() > 0.6) { // 40% chance in any given month
+                    const payDate = new Date(today.getFullYear(), today.getMonth() - m, randInt(1, 28));
+                    contributions.push({
+                        id: nextContribId++, member_id: memberId,
+                        amount: monthlyAmounts[randInt(0, monthlyAmounts.length - 1)],
+                        pay_date: payDate.toISOString().split('T')[0],
+                        notes: 'Monthly Add', created_at: payDate.toISOString()
+                    });
+                }
+            }
         }
     }
 

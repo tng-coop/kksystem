@@ -1,14 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.js';
 
 test.describe('Demo Mode Parallel E2E Suite', () => {
   // Since we run in "fullyParallel" mode, every test runs in its own native browser Context. 
   // Browser Contexts inherently completely isolate localStorage and cookies, guaranteeing zero 
   // cross-contamination even while running tests concurrently at blistering speeds!
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, i18n }) => {
     // Navigate to relative root to preserve subfolder contexts (like GH Pages /kksystem/)
     await page.goto('./');
     // Clear and reload to ensure the mock database initializes perfectly cleanly for this instance
     await page.evaluate(() => localStorage.clear());
+    
+    // Injects the exact translation locale boundary natively into localStorage immediately prior to reload
+    await page.evaluate((lang) => localStorage.setItem('kksystem_lang', lang), i18n.__lang);
+    
     await page.reload();
   });
 
@@ -67,7 +71,7 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await expect(page.getByTestId('member-row-4')).not.toBeVisible();
   });
 
-  test('Member Profile Editing', async ({ page }) => {
+  test('Member Profile Editing', async ({ page, i18n }) => {
     await page.getByTestId('tab-members').click();
 
     // Expand the first member (ID 1: 田中 太郎)
@@ -75,11 +79,11 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('btn-edit-member-1').click();
 
     // The edit form appears; modify the name
-    const nameInput = page.locator('.profile-edit-form input[placeholder="氏名"]');
+    const nameInput = page.locator(`.profile-edit-form input[placeholder="${i18n.ph_name}"]`);
     await nameInput.fill('田中 修'); 
     
-    // Save changes
-    await page.getByTestId('btn-save-member').click();
+    // Save changes using the inherently fully-localized Strat 2 best practice:
+    await page.getByRole('button', { name: i18n.btn_save }).click();
 
     // Verify row updated permanently in the DOM
     await expect(page.getByTestId('member-row-1')).toContainText('田中 修');
@@ -91,7 +95,7 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await expect(page.getByTestId('member-row-1')).toContainText('田中 修');
   });
 
-  test('Member Status Management (Deceased/Inactive)', async ({ page }) => {
+  test('Member Status Management (Deceased/Inactive)', async ({ page, i18n }) => {
     await page.getByTestId('tab-members').click();
     
     // Open member 2 (佐藤 花子)
@@ -102,14 +106,14 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     const livingCheckbox = page.locator('.profile-edit-form input[type="checkbox"]');
     await livingCheckbox.uncheck();
 
-    // Save changes
-    await page.getByTestId('btn-save-member').click();
+    // Save changes via native i18n role lookup
+    await page.getByRole('button', { name: i18n.btn_save }).click();
 
     // Verify '死亡' (Deceased) badge is rendered
-    await expect(page.getByTestId('member-row-2').locator('.status-badge.inactive').filter({ hasText: '死亡' })).toBeVisible();
+    await expect(page.getByTestId('member-row-2').locator('.status-badge.inactive').filter({ hasText: i18n.status_deceased })).toBeVisible();
   });
 
-  test('Print UI Rendering (Labels & Certificates)', async ({ page }) => {
+  test('Print UI Rendering (Labels & Certificates)', async ({ page, i18n }) => {
     await page.getByTestId('tab-members').click();
     
     // Test Labels Print
@@ -134,7 +138,7 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     
     // Check if the print-only certificate page reliably rendered
     await expect(page.locator('.print-only.certificate-page')).toBeAttached();
-    await expect(page.locator('.print-only.certificate-page .cert-title')).toHaveText('出資証明書');
+    await expect(page.locator('.print-only.certificate-page .cert-title')).toHaveText(i18n.title_certificate);
 
     printCalled = await page.evaluate(() => window.__PRINT_CALLED__);
     expect(printCalled).toBe(true);

@@ -12,11 +12,26 @@ export default defineConfig({
   use: {
     baseURL: targetUrl,
     trace: 'on-first-retry',
-    browserName: 'chromium'
   },
+  projects: [
+    {
+      name: 'Desktop JP',
+      use: {
+        browserName: 'chromium',
+        locale: 'ja-JP',
+      },
+    },
+    {
+      name: 'Desktop EN',
+      use: {
+        browserName: 'chromium',
+        locale: 'en-US',
+      },
+    },
+  ],
   webServer: isRemoteUrl ? undefined : {
     // Automatically boot frontend in Demo Mode securely for tests
-    command: 'VITE_DEMO_MODE=true npm run dev:frontend',
+    command: 'VITE_IS_E2E=true VITE_DEMO_MODE=true npm run dev:frontend',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 10000,

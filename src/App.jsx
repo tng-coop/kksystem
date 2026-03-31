@@ -1,8 +1,16 @@
 import { useState, useEffect, Fragment } from 'react'
 import './App.css'
 import { apiGetMembers, apiAddMember, apiUpdateMember, apiGetContributions, apiAddContribution, apiGetStats, isDemoMode } from './api.js'
+import jaDict from './locales/ja.json'
+import enDict from './locales/en.json'
+import DashboardCharts from './DashboardCharts.jsx'
+
+const dicts = { ja: jaDict, en: enDict }
 
 function App() {
+  const [lang, setLang] = useState(() => localStorage.getItem('kksystem_lang') || 'ja')
+  const t = (key) => dicts[lang]?.[key] || key
+
   const [activeTab, setActiveTab] = useState('dashboard')
   const [printMode, setPrintMode] = useState(null) // 'labels', 'certificate', or null
   const [printData, setPrintData] = useState(null)
@@ -119,7 +127,7 @@ function App() {
       <div className="print-only labels-grid">
         {printData.members.map(m => (
           <div key={m.id} className="label-cell">
-            <p className="label-address">{m.address || '〒___-____ 住所未登録'}</p>
+            <p className="label-address">{m.address || t('lbl_address_unregistered')}</p>
             <h2 className="label-name">{m.name} 様</h2>
             <p className="label-sender">TNG Co-op 出資金管理システム</p>
           </div>
@@ -135,28 +143,28 @@ function App() {
 
     return (
       <div className="print-only certificate-page">
-        <h1 className="cert-title">出資証明書</h1>
+        <h1 className="cert-title">{t('title_certificate')}</h1>
 
         <div className="cert-header">
           <div className="cert-member-info">
             <h2>{member.name} 様</h2>
-            <p><strong>組合員ID:</strong> #{member.id}</p>
-            <p><strong>加入日:</strong> {member.join_date || '未登録'}</p>
+            <p><strong>{t('lbl_member_id')}</strong> #{member.id}</p>
+            <p><strong>{t('th_join_date')}:</strong> {member.join_date || t('lbl_unregistered')}</p>
           </div>
           <div className="cert-summary">
-            <p>現在の出資総額:</p>
+            <p>{t('lbl_current_total')}</p>
             <h3>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(totalCapital)}</h3>
           </div>
         </div>
 
         <div className="cert-body">
-          <h4>【 出資履歴 】</h4>
+          <h4>{t('title_history_bracket')}</h4>
           <table className="cert-table">
             <thead>
               <tr>
-                <th>日付</th>
-                <th>金額</th>
-                <th>備考</th>
+                <th>{t('th_date')}</th>
+                <th>{t('th_amount')}</th>
+                <th>{t('th_notes')}</th>
               </tr>
             </thead>
             <tbody>
@@ -172,10 +180,10 @@ function App() {
         </div>
 
         <div className="cert-footer">
-          <p>上記金額を正に受領いたしました。</p>
+          <p>{t('msg_receipt')}</p>
           <div className="cert-signature">
-            <p>発行日: {today}</p>
-            <p>TNG Co-op 運営委員会 <span>印</span></p>
+            <p>{t('lbl_issue_date')} {today}</p>
+            <p>{t('lbl_committee')} <span>{t('lbl_seal')}</span></p>
           </div>
         </div>
       </div>
@@ -188,46 +196,59 @@ function App() {
       <div className="bg-orb orb-secondary" />
 
       <header className="app-header" style={isDemoMode ? { borderBottom: '2px solid #ffcc00' } : {}}>
-        <h1 className="logo">
-          TNG Co-op <span>出資金管理システム</span>
-          {isDemoMode && <span className="demo-badge" style={{ marginLeft: '1rem', fontSize: '0.8rem', background: '#ffcc00', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '4px', verticalAlign: 'middle', fontWeight: 'bold', textShadow: 'none' }}>DEMO MODE</span>}
+        <h1 className="logo" style={{ display: 'flex', alignItems: 'center', width: '100%', WebkitBoxPack: 'justify', justifyContent: 'space-between' }}>
+          <div>
+            TNG Co-op <span>{t('app_subtitle')}</span>
+            {isDemoMode && (
+              <>
+                <span className="demo-badge" style={{ marginLeft: '1rem', fontSize: '0.8rem', background: '#ffcc00', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '4px', verticalAlign: 'middle', fontWeight: 'bold', textShadow: 'none' }}>DEMO MODE</span>
+                <button onClick={() => { localStorage.removeItem('kksystem_demo_data'); window.location.reload(); }} title="Reset Demo Data" style={{ marginLeft: '0.5rem', fontSize: '0.7rem', background: '#ff4444', color: '#fff', border: 'none', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', verticalAlign: 'middle', fontWeight: 'bold' }}>↻ RESET</button>
+              </>
+            )}
+          </div>
+          <button onClick={() => { const ny = lang === 'ja' ? 'en' : 'ja'; setLang(ny); localStorage.setItem('kksystem_lang', ny); }} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '4px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
+            {lang === 'ja' ? '🇯🇵 JP' : '🇺🇸 EN'}
+          </button>
         </h1>
         <nav className="nav-tabs">
-          <button data-testid="tab-dashboard" className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => { setActiveTab('dashboard'); setExpandedMemberId(null); setEditingMemberId(null); }}>概要</button>
-          <button data-testid="tab-members" className={activeTab === 'members' ? 'active' : ''} onClick={() => { setActiveTab('members'); setExpandedMemberId(null); setEditingMemberId(null); }}>組合員名簿</button>
-          <button data-testid="tab-contributions" className={activeTab === 'contributions' ? 'active' : ''} onClick={() => { setActiveTab('contributions'); setExpandedMemberId(null); setEditingMemberId(null); }}>出資金履歴</button>
+          <button data-testid="tab-dashboard" className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => { setActiveTab('dashboard'); setExpandedMemberId(null); setEditingMemberId(null); }}>{t('tab_dashboard')}</button>
+          <button data-testid="tab-members" className={activeTab === 'members' ? 'active' : ''} onClick={() => { setActiveTab('members'); setExpandedMemberId(null); setEditingMemberId(null); }}>{t('tab_members')}</button>
+          <button data-testid="tab-contributions" className={activeTab === 'contributions' ? 'active' : ''} onClick={() => { setActiveTab('contributions'); setExpandedMemberId(null); setEditingMemberId(null); }}>{t('tab_contributions')}</button>
         </nav>
       </header>
 
       <main className="main-content">
         {activeTab === 'dashboard' && (
-          <div className="dashboard-grid glass-card fade-in">
-            <div data-testid="stat-active-members" className="stat-card">
-              <h3>アクティブ組合員数</h3>
-              <p className="stat-number">{stats.activeMembers || 0}</p>
+          <div className="dashboard-view fade-in">
+            <div className="dashboard-grid glass-card">
+              <div data-testid="stat-active-members" className="stat-card">
+                <h3>{t('stat_active_members')}</h3>
+                <p className="stat-number">{stats.activeMembers || 0}</p>
+              </div>
+              <div data-testid="stat-total-capital" className="stat-card">
+                <h3>{t('stat_total_capital')}</h3>
+                <p className="stat-number">{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(stats.totalCapital || 0)}</p>
+              </div>
             </div>
-            <div data-testid="stat-total-capital" className="stat-card">
-              <h3>出資金総額</h3>
-              <p className="stat-number">{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(stats.totalCapital || 0)}</p>
-            </div>
+            <DashboardCharts members={members} contributions={contributions} t={t} />
           </div>
         )}
 
         {activeTab === 'members' && (
           <div className="members-view fade-in">
             <div className="form-card glass-card">
-              <h3>新規登録</h3>
+              <h3>{t('title_new_registration')}</h3>
               <form onSubmit={handleAddMember}>
                 <div className="form-row" style={{ alignItems: 'center' }}>
-                  <input data-testid="input-new-member-name" type="text" placeholder="氏名" required value={newMember.name} onChange={e => setNewMember({ ...newMember, name: e.target.value })} />
-                  <input data-testid="input-new-member-email" type="email" placeholder="メールアドレス (任意)" value={newMember.email} onChange={e => setNewMember({ ...newMember, email: e.target.value })} />
-                  <input data-testid="input-new-member-date" type="date" title="加入日 (任意)" value={newMember.join_date} onChange={e => setNewMember({ ...newMember, join_date: e.target.value })} />
-                  <input data-testid="input-new-member-address" type="text" placeholder="住所 (任意)" value={newMember.address} onChange={e => setNewMember({ ...newMember, address: e.target.value })} />
+                  <input data-testid="input-new-member-name" type="text" placeholder={t('ph_name')} required value={newMember.name} onChange={e => setNewMember({ ...newMember, name: e.target.value })} />
+                  <input data-testid="input-new-member-email" type="email" placeholder={t('ph_email_optional')} value={newMember.email} onChange={e => setNewMember({ ...newMember, email: e.target.value })} />
+                  <input data-testid="input-new-member-date" type="date" title={t('ph_join_date_optional')} value={newMember.join_date} onChange={e => setNewMember({ ...newMember, join_date: e.target.value })} />
+                  <input data-testid="input-new-member-address" type="text" placeholder={t('ph_address_optional')} value={newMember.address} onChange={e => setNewMember({ ...newMember, address: e.target.value })} />
                   <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
                     <input data-testid="checkbox-new-member-living" type="checkbox" checked={newMember.is_living} onChange={e => setNewMember({ ...newMember, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
-                    生存
+                    {t('lbl_living')}
                   </label>
-                  <button data-testid="btn-submit-new-member" type="submit" className="btn-primary">登録</button>
+                  <button data-testid="btn-submit-new-member" type="submit" className="btn-primary">{t('btn_register')}</button>
                 </div>
               </form>
             </div>
@@ -236,17 +257,17 @@ function App() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h3 style={{ margin: 0 }}>組合員名簿</h3>
                 <button data-testid="btn-print-labels" className="btn-secondary" onClick={handlePrintLabels} style={{ fontSize: '0.85rem' }}>
-                  🖨️ 宛名ラベル印刷 (2x10)
+                  🖨️ {t('btn_print_labels')}
                 </button>
               </div>
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>氏名</th>
-                    <th>メール</th>
-                    <th>加入日</th>
-                    <th>ステータス</th>
+                    <th>{t('th_id')}</th>
+                    <th>{t('ph_name')}</th>
+                    <th>{t('ph_email')}</th>
+                    <th>{t('th_join_date')}</th>
+                    <th>{t('th_status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -263,8 +284,8 @@ function App() {
                           <td className={!member.email ? 'text-muted' : ''}>{member.email || '-'}</td>
                           <td className={!member.join_date ? 'text-muted' : ''}>{member.join_date || '-'}</td>
                           <td>
-                            <span className={'status-badge ' + member.status}>{member.status === 'active' ? '有効' : '無効'}</span>
-                            {!member.is_living && <span className={'status-badge inactive'} style={{ marginLeft: '0.5rem' }}>死亡</span>}
+                            <span className={'status-badge ' + member.status}>{member.status === 'active' ? t('status_active') : t('status_inactive')}</span>
+                            {!member.is_living && <span className={'status-badge inactive'} style={{ marginLeft: '0.5rem' }}>{t('status_deceased')}</span>}
                           </td>
                         </tr>
                         {isExpanded && (
@@ -274,46 +295,46 @@ function App() {
                                 {isEditing ? (
                                   <form className="profile-edit-form" onSubmit={handleUpdateMember}>
                                     <div className="form-row">
-                                      <input type="text" placeholder="氏名" required value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} />
-                                      <input type="email" placeholder="メールアドレス" value={editFormData.email || ''} onChange={e => setEditFormData({ ...editFormData, email: e.target.value })} />
+                                      <input type="text" placeholder={t('ph_name')} required value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} />
+                                      <input type="email" placeholder={t('ph_email')} value={editFormData.email || ''} onChange={e => setEditFormData({ ...editFormData, email: e.target.value })} />
                                       <input type="date" value={editFormData.join_date || ''} onChange={e => setEditFormData({ ...editFormData, join_date: e.target.value })} />
-                                      <input type="text" placeholder="住所" value={editFormData.address || ''} onChange={e => setEditFormData({ ...editFormData, address: e.target.value })} />
+                                      <input type="text" placeholder={t('ph_address')} value={editFormData.address || ''} onChange={e => setEditFormData({ ...editFormData, address: e.target.value })} />
                                     </div>
                                     <div className="form-row top-margin" style={{ alignItems: 'center' }}>
                                       <select value={editFormData.status} onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}>
-                                        <option value="active">有効</option>
-                                        <option value="inactive">無効</option>
+                                        <option value="active">{t('status_active')}</option>
+                                        <option value="inactive">{t('status_inactive')}</option>
                                       </select>
                                       <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem' }}>
                                         <input type="checkbox" checked={editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
-                                        生存
+                                        {t('lbl_living')}
                                       </label>
                                       <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-                                        <button type="button" className="btn-secondary" onClick={() => setEditingMemberId(null)}>キャンセル</button>
-                                        <button data-testid="btn-save-member" type="submit" className="btn-primary">保存</button>
+                                        <button type="button" className="btn-secondary" onClick={() => setEditingMemberId(null)}>{t('btn_cancel')}</button>
+                                        <button data-testid="btn-save-member" type="submit" className="btn-primary">{t('btn_save')}</button>
                                       </div>
                                     </div>
                                   </form>
                                 ) : (
                                   <div className="expanded-profile-grid">
                                     <div className="ep-info">
-                                      <h4>プロフィール詳細</h4>
-                                      <p><strong>住所:</strong> <span className={!member.address ? 'text-muted' : ''}>{member.address || '未登録'}</span></p>
-                                      <p style={{ marginTop: '1.5rem' }}><strong>個人の出資総額:</strong> <br /><span className="stat-number small" style={{ fontSize: '1.5rem' }}>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(totalCapital)}</span></p>
+                                      <h4>{t('title_profile_details')}</h4>
+                                      <p><strong>{t('ph_address')}:</strong> <span className={!member.address ? 'text-muted' : ''}>{member.address || t('lbl_unregistered')}</span></p>
+                                      <p style={{ marginTop: '1.5rem' }}><strong>{t('lbl_personal_capital')}</strong> <br /><span className="stat-number small" style={{ fontSize: '1.5rem' }}>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(totalCapital)}</span></p>
                                       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                                        <button data-testid={`btn-edit-member-${member.id}`} type="button" className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => { setEditFormData(member); setEditingMemberId(member.id); }}>編集する</button>
-                                        <button data-testid={`btn-print-cert-${member.id}`} type="button" className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handlePrintCertificate(member, memberContribs)}>📄 証明書印刷</button>
+                                        <button data-testid={`btn-edit-member-${member.id}`} type="button" className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => { setEditFormData(member); setEditingMemberId(member.id); }}>{t('btn_edit')}</button>
+                                        <button data-testid={`btn-print-cert-${member.id}`} type="button" className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handlePrintCertificate(member, memberContribs)}>📄 {t('btn_print_cert')}</button>
                                       </div>
                                     </div>
                                     <div className="ep-history">
-                                      <h4>出資履歴</h4>
+                                      <h4>{t('title_capital_history')}</h4>
                                       {memberContribs.length > 0 ? (
                                         <table className="data-table compact-table" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', overflow: 'hidden' }}>
                                           <thead>
                                             <tr>
-                                              <th style={{ padding: '0.5rem 1rem' }}>日付</th>
-                                              <th style={{ padding: '0.5rem 1rem' }}>金額</th>
-                                              <th style={{ padding: '0.5rem 1rem' }}>備考</th>
+                                              <th style={{ padding: '0.5rem 1rem' }}>{t('th_date')}</th>
+                                              <th style={{ padding: '0.5rem 1rem' }}>{t('th_amount')}</th>
+                                              <th style={{ padding: '0.5rem 1rem' }}>{t('th_notes')}</th>
                                             </tr>
                                           </thead>
                                           <tbody>
@@ -327,7 +348,7 @@ function App() {
                                           </tbody>
                                         </table>
                                       ) : (
-                                        <p className="empty-state" style={{ padding: '1rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>該当組合員の出資履歴はありません。</p>
+                                        <p className="empty-state" style={{ padding: '1rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>{t('msg_no_history')}</p>
                                       )}
                                     </div>
                                   </div>
@@ -339,7 +360,7 @@ function App() {
                       </Fragment>
                     )
                   })}
-                  {members.length === 0 && <tr><td colSpan="5" className="empty-state">登録されている組合員はいません。</td></tr>}
+                  {members.length === 0 && <tr><td colSpan="5" className="empty-state">{t('msg_no_members')}</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -349,31 +370,31 @@ function App() {
         {activeTab === 'contributions' && (
           <div className="contributions-view fade-in">
             <div className="form-card glass-card">
-              <h3>出資金の記録</h3>
+              <h3>{t('title_record_capital')}</h3>
               <form onSubmit={handleAddContribution}>
                 <div className="form-row">
                   <select data-testid="select-contrib-member" required value={newContribution.member_id} onChange={e => setNewContribution({ ...newContribution, member_id: e.target.value })}>
-                    <option value="" disabled>組合員を選択...</option>
+                    <option value="" disabled>{t('ph_select_member')}</option>
                     {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
-                  <input data-testid="input-contrib-amount" type="number" step="1" min="0" placeholder="金額 (Yen)" required value={newContribution.amount} onChange={e => setNewContribution({ ...newContribution, amount: e.target.value })} />
+                  <input data-testid="input-contrib-amount" type="number" step="1" min="0" placeholder={t('ph_amount')} required value={newContribution.amount} onChange={e => setNewContribution({ ...newContribution, amount: e.target.value })} />
                   <input data-testid="input-contrib-date" type="date" required value={newContribution.pay_date} onChange={e => setNewContribution({ ...newContribution, pay_date: e.target.value })} />
-                  <input data-testid="input-contrib-notes" type="text" placeholder="備考 (任意)" value={newContribution.notes} onChange={e => setNewContribution({ ...newContribution, notes: e.target.value })} />
-                  <button data-testid="btn-submit-contrib" type="submit" className="btn-primary">記録</button>
+                  <input data-testid="input-contrib-notes" type="text" placeholder={t('ph_notes_optional')} value={newContribution.notes} onChange={e => setNewContribution({ ...newContribution, notes: e.target.value })} />
+                  <button data-testid="btn-submit-contrib" type="submit" className="btn-primary">{t('btn_record')}</button>
                 </div>
               </form>
             </div>
 
             <div className="table-card glass-card">
-              <h3>出資金履歴一覧</h3>
+              <h3>{t('title_capital_history_list')}</h3>
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>組合員名</th>
-                    <th>金額</th>
-                    <th>日付</th>
-                    <th>備考</th>
+                    <th>{t('th_id')}</th>
+                    <th>{t('th_member_name')}</th>
+                    <th>{t('th_amount')}</th>
+                    <th>{t('th_date')}</th>
+                    <th>{t('th_notes')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -386,7 +407,7 @@ function App() {
                       <td className="notes-cell">{c.notes || '-'}</td>
                     </tr>
                   ))}
-                  {contributions.length === 0 && <tr><td colSpan="5" className="empty-state">まだ出資金の履歴はありません。</td></tr>}
+                  {contributions.length === 0 && <tr><td colSpan="5" className="empty-state">{t('msg_no_history')}</td></tr>}
                 </tbody>
               </table>
             </div>
