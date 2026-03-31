@@ -202,7 +202,7 @@ function App() {
             {isDemoMode && (
               <>
                 <span className="demo-badge" style={{ marginLeft: '1rem', fontSize: '0.8rem', background: '#ffcc00', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '4px', verticalAlign: 'middle', fontWeight: 'bold', textShadow: 'none' }}>DEMO MODE</span>
-                <button onClick={() => { localStorage.removeItem('kksystem_demo_data'); window.location.reload(); }} title="Reset Demo Data" style={{ marginLeft: '0.5rem', fontSize: '0.7rem', background: '#ff4444', color: '#fff', border: 'none', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', verticalAlign: 'middle', fontWeight: 'bold' }}>↻ RESET</button>
+                <button title="Reset Demo Data" aria-label="Reset Demo Data" onClick={() => { localStorage.removeItem('kksystem_demo_data'); window.location.reload(); }} style={{ marginLeft: '0.5rem', fontSize: '0.7rem', background: '#cc0000', color: '#fff', border: 'none', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', verticalAlign: 'middle', fontWeight: 'bold' }}>↻ RESET</button>
               </>
             )}
           </div>
@@ -222,11 +222,11 @@ function App() {
           <div className="dashboard-view fade-in">
             <div className="dashboard-grid glass-card">
               <div data-testid="stat-active-members" className="stat-card">
-                <h3>{t('stat_active_members')}</h3>
+                <h2>{t('stat_active_members')}</h2>
                 <p className="stat-number">{stats.activeMembers || 0}</p>
               </div>
               <div data-testid="stat-total-capital" className="stat-card">
-                <h3>{t('stat_total_capital')}</h3>
+                <h2>{t('stat_total_capital')}</h2>
                 <p className="stat-number">{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(stats.totalCapital || 0)}</p>
               </div>
             </div>
@@ -237,15 +237,15 @@ function App() {
         {activeTab === 'members' && (
           <div className="members-view fade-in">
             <div className="form-card glass-card">
-              <h3>{t('title_new_registration')}</h3>
+              <h2>{t('title_new_registration')}</h2>
               <form onSubmit={handleAddMember}>
                 <div className="form-row" style={{ alignItems: 'center' }}>
-                  <input data-testid="input-new-member-name" type="text" placeholder={t('ph_name')} required value={newMember.name} onChange={e => setNewMember({ ...newMember, name: e.target.value })} />
-                  <input data-testid="input-new-member-email" type="email" placeholder={t('ph_email_optional')} value={newMember.email} onChange={e => setNewMember({ ...newMember, email: e.target.value })} />
-                  <input data-testid="input-new-member-date" type="date" title={t('ph_join_date_optional')} value={newMember.join_date} onChange={e => setNewMember({ ...newMember, join_date: e.target.value })} />
-                  <input data-testid="input-new-member-address" type="text" placeholder={t('ph_address_optional')} value={newMember.address} onChange={e => setNewMember({ ...newMember, address: e.target.value })} />
+                  <input data-testid="input-new-member-name" aria-label={t('ph_name')} type="text" placeholder={t('ph_name')} required value={newMember.name} onChange={e => setNewMember({ ...newMember, name: e.target.value })} />
+                  <input data-testid="input-new-member-email" aria-label={t('ph_email')} type="email" placeholder={t('ph_email_optional')} value={newMember.email} onChange={e => setNewMember({ ...newMember, email: e.target.value })} />
+                  <input data-testid="input-new-member-date" aria-label={t('th_join_date')} type="date" title={t('ph_join_date_optional')} value={newMember.join_date} onChange={e => setNewMember({ ...newMember, join_date: e.target.value })} />
+                  <input data-testid="input-new-member-address" aria-label={t('ph_address')} type="text" placeholder={t('ph_address_optional')} value={newMember.address} onChange={e => setNewMember({ ...newMember, address: e.target.value })} />
                   <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
-                    <input data-testid="checkbox-new-member-living" type="checkbox" checked={newMember.is_living} onChange={e => setNewMember({ ...newMember, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
+                    <input data-testid="checkbox-new-member-living" aria-label={t('lbl_living')} type="checkbox" checked={newMember.is_living} onChange={e => setNewMember({ ...newMember, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
                     {t('lbl_living')}
                   </label>
                   <button data-testid="btn-submit-new-member" type="submit" className="btn-primary">{t('btn_register')}</button>
@@ -255,7 +255,7 @@ function App() {
 
             <div className="table-card glass-card top-margin">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ margin: 0 }}>組合員名簿</h3>
+                <h2 style={{ margin: 0 }}>組合員名簿</h2>
                 <button data-testid="btn-print-labels" className="btn-secondary" onClick={handlePrintLabels} style={{ fontSize: '0.85rem' }}>
                   🖨️ {t('btn_print_labels')}
                 </button>
@@ -295,18 +295,18 @@ function App() {
                                 {isEditing ? (
                                   <form className="profile-edit-form" onSubmit={handleUpdateMember}>
                                     <div className="form-row">
-                                      <input type="text" placeholder={t('ph_name')} required value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} />
-                                      <input type="email" placeholder={t('ph_email')} value={editFormData.email || ''} onChange={e => setEditFormData({ ...editFormData, email: e.target.value })} />
-                                      <input type="date" value={editFormData.join_date || ''} onChange={e => setEditFormData({ ...editFormData, join_date: e.target.value })} />
-                                      <input type="text" placeholder={t('ph_address')} value={editFormData.address || ''} onChange={e => setEditFormData({ ...editFormData, address: e.target.value })} />
+                                      <input aria-label={t('ph_name')} type="text" placeholder={t('ph_name')} required value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} />
+                                      <input aria-label={t('ph_email')} type="email" placeholder={t('ph_email')} value={editFormData.email || ''} onChange={e => setEditFormData({ ...editFormData, email: e.target.value })} />
+                                      <input aria-label={t('th_join_date')} type="date" value={editFormData.join_date || ''} onChange={e => setEditFormData({ ...editFormData, join_date: e.target.value })} />
+                                      <input aria-label={t('ph_address')} type="text" placeholder={t('ph_address')} value={editFormData.address || ''} onChange={e => setEditFormData({ ...editFormData, address: e.target.value })} />
                                     </div>
                                     <div className="form-row top-margin" style={{ alignItems: 'center' }}>
-                                      <select value={editFormData.status} onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}>
+                                      <select aria-label={t('th_status')} value={editFormData.status} onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}>
                                         <option value="active">{t('status_active')}</option>
                                         <option value="inactive">{t('status_inactive')}</option>
                                       </select>
                                       <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem' }}>
-                                        <input type="checkbox" checked={editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
+                                        <input aria-label={t('lbl_living')} type="checkbox" checked={editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
                                         {t('lbl_living')}
                                       </label>
                                       <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
@@ -370,23 +370,23 @@ function App() {
         {activeTab === 'contributions' && (
           <div className="contributions-view fade-in">
             <div className="form-card glass-card">
-              <h3>{t('title_record_capital')}</h3>
+              <h2>{t('title_record_capital')}</h2>
               <form onSubmit={handleAddContribution}>
                 <div className="form-row">
-                  <select data-testid="select-contrib-member" required value={newContribution.member_id} onChange={e => setNewContribution({ ...newContribution, member_id: e.target.value })}>
+                  <select data-testid="select-contrib-member" aria-label={t('ph_select_member')} required value={newContribution.member_id} onChange={e => setNewContribution({ ...newContribution, member_id: e.target.value })}>
                     <option value="" disabled>{t('ph_select_member')}</option>
                     {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
-                  <input data-testid="input-contrib-amount" type="number" step="1" min="0" placeholder={t('ph_amount')} required value={newContribution.amount} onChange={e => setNewContribution({ ...newContribution, amount: e.target.value })} />
-                  <input data-testid="input-contrib-date" type="date" required value={newContribution.pay_date} onChange={e => setNewContribution({ ...newContribution, pay_date: e.target.value })} />
-                  <input data-testid="input-contrib-notes" type="text" placeholder={t('ph_notes_optional')} value={newContribution.notes} onChange={e => setNewContribution({ ...newContribution, notes: e.target.value })} />
+                  <input data-testid="input-contrib-amount" aria-label={t('ph_amount')} type="number" step="1" min="0" placeholder={t('ph_amount')} required value={newContribution.amount} onChange={e => setNewContribution({ ...newContribution, amount: e.target.value })} />
+                  <input data-testid="input-contrib-date" aria-label={t('th_date')} type="date" required value={newContribution.pay_date} onChange={e => setNewContribution({ ...newContribution, pay_date: e.target.value })} />
+                  <input data-testid="input-contrib-notes" aria-label={t('ph_notes_optional')} type="text" placeholder={t('ph_notes_optional')} value={newContribution.notes} onChange={e => setNewContribution({ ...newContribution, notes: e.target.value })} />
                   <button data-testid="btn-submit-contrib" type="submit" className="btn-primary">{t('btn_record')}</button>
                 </div>
               </form>
             </div>
 
             <div className="table-card glass-card">
-              <h3>{t('title_capital_history_list')}</h3>
+              <h2>{t('title_capital_history_list')}</h2>
               <table className="data-table">
                 <thead>
                   <tr>

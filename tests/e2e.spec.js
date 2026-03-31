@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures.js';
+import AxeBuilder from '@axe-core/playwright';
 
 test.describe('Demo Mode Parallel E2E Suite', () => {
   // Since we run in "fullyParallel" mode, every test runs in its own native browser Context. 
@@ -21,6 +22,11 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await expect(page.getByTestId('stat-active-members').locator('.stat-number')).toHaveText('3');
     await expect(page.getByTestId('stat-total-capital').locator('.stat-number')).toContainText('210,000');
 
+    // Audit Dashboard A11y (Wait for fade-in animations to settle)
+    await page.waitForTimeout(500);
+    const r1 = await new AxeBuilder({ page }).analyze();
+    expect(r1.violations).toEqual([]);
+    
     // Add a new member
     await page.getByTestId('tab-members').click();
     await page.getByTestId('input-new-member-name').fill('Playwright Tester');
@@ -31,6 +37,11 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     const newRow = page.getByTestId('member-row-4'); 
     await expect(newRow).toBeVisible();
     await expect(newRow).toContainText('Playwright Tester');
+
+    // Audit Members Tab A11y
+    await page.waitForTimeout(500);
+    const r2 = await new AxeBuilder({ page }).analyze();
+    expect(r2.violations).toEqual([]);
 
     // Add a contribution
     await page.getByTestId('tab-contributions').click();
@@ -72,6 +83,13 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
   });
 
   test('Member Profile Editing', async ({ page, i18n }) => {
+    // Audit Contributions Tab A11y
+    await page.getByTestId('tab-contributions').click();
+    await page.waitForTimeout(500);
+    const r3 = await new AxeBuilder({ page }).analyze();
+    expect(r3.violations).toEqual([]);
+
+    // View Member Profile natively verifies component logic
     await page.getByTestId('tab-members').click();
 
     // Expand the first member (ID 1: 田中 太郎)
