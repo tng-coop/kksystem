@@ -18,9 +18,13 @@ function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlLang = params.get('lang');
-    if (urlLang === 'en' || urlLang === 'ja') {
-      setLang(urlLang);
-      localStorage.setItem('kksystem_lang', urlLang);
+    
+    // Support both ?lang=ja and ?lang=jp parameter
+    const targetLang = urlLang === 'jp' ? 'ja' : urlLang;
+
+    if (targetLang === 'en' || targetLang === 'ja') {
+      setLang(targetLang);
+      localStorage.setItem('kksystem_lang', targetLang);
     }
   }, [setLang]);
 
