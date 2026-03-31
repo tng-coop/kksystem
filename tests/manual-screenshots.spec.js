@@ -1,4 +1,6 @@
 import { test, expect } from './fixtures.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 test.describe('Manual Screenshots Generation', () => {
 
@@ -44,5 +46,26 @@ test.describe('Manual Screenshots Generation', () => {
         await page.screenshot({ path: `dist/screenshots/04-print-labels-${localeTag}.png`, fullPage: true });
         
         await page.emulateMedia({ media: 'screen' });
+    });
+});
+
+test.describe('Documentation Asset Integrity Check', () => {
+    test.afterAll(async () => {
+        const expectedAssets = [
+            '01-dashboard-en.png', '01-dashboard-jp.png', 
+            '02-members-en.png', '02-members-jp.png', 
+            '03-contributions-en.png', '03-contributions-jp.png', 
+            '04-print-labels-en.png', '04-print-labels-jp.png'
+        ];
+
+        for (const asset of expectedAssets) {
+            const assetPath = path.resolve(`./dist/screenshots/${asset}`);
+            expect(fs.existsSync(assetPath), `Missing High-Fidelity Manual Asset (404 RISK on GH Pages): ${assetPath}`).toBeTruthy();
+        }
+    });
+
+    test('Invoke post-generation integrity checker', async () => {
+        // test.afterAll executes after this dummy test satisfies parallel runners.
+        expect(true).toBe(true);
     });
 });
