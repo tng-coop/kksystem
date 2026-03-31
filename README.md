@@ -1,16 +1,26 @@
-# React + Vite
+# TNG Co-op Capital Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A high-fidelity, dual-locale (English/Japanese), serverless architecture for managing cooperative capital growth, tracking member statuses, and generating physical print-ready documentation natively in the browser.
 
-Currently, two official plugins are available:
+## Official User Manual
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. The Financial Dashboard
+Review your 24-month capital growth and member distribution at a glance. The data initializes automatically in Demo Mode using pseudo-random generation to simulate a living cooperative environment.
 
-## React Compiler
+### 2. Member Management
+Register new members and click any row to instantly expand their full lifetime contribution history directly inside the interactive grid.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 3. Recording Capital
+Log new financial contributions securely. The software automatically attributes deposits cleanly directly to your active member profile database and recalculates the global dashboard charts in real-time.
 
-## Expanding the ESLint configuration
+### 4. Printing Certificates
+Deploy the native browser print engine by clicking the **Print Labels** or **Print Certificate** button. The application dynamically purges UI headers, disables dark mode (`@media print`), and generates perfectly scaled mailing labels and officially formatted desktop capital certificates effortlessly.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Technical Stack & Features
+- **Frontend Engine**: React 18 / Vite
+- **Visuals**: Native Glassmorphism (Backdrop Filters) & Recharts (Data Visualization)
+- **CI/CD Gatekeeper**: Playwright E2E Native Matrix (Chromium)
+- **Accessibility**: `@axe-core/playwright` Enforced WCAG AA Compliance
+- **Localization**: Live Hot-Swappable JSON Dictionary Architecture (EN/JP)

@@ -20,19 +20,19 @@ test.describe('Manual Screenshots Generation', () => {
         // Let the massive 24-month chart generator settle & render
         await page.waitForSelector('.recharts-wrapper', { timeout: 10000 });
         await page.waitForTimeout(1500); 
-        await page.screenshot({ path: `public/manual-assets/01-dashboard-${localeTag}.png`, fullPage: true });
+        await page.screenshot({ path: `dist/screenshots/01-dashboard-${localeTag}.png`, fullPage: true });
 
         // 2. Members Management Table
         await page.getByTestId('tab-members').click();
         await page.waitForSelector('table.data-table');
         await page.waitForTimeout(500);
-        await page.screenshot({ path: `public/manual-assets/02-members-${localeTag}.png`, fullPage: true });
+        await page.screenshot({ path: `dist/screenshots/02-members-${localeTag}.png`, fullPage: true });
 
         // 3. Contributions Entry
         await page.getByTestId('tab-contributions').click();
         await page.waitForSelector('.form-card');
         await page.waitForTimeout(500);
-        await page.screenshot({ path: `public/manual-assets/03-contributions-${localeTag}.png`, fullPage: true });
+        await page.screenshot({ path: `dist/screenshots/03-contributions-${localeTag}.png`, fullPage: true });
 
         // 4. Print App / Labels Pipeline
         await page.getByTestId('tab-members').click();
@@ -41,7 +41,7 @@ test.describe('Manual Screenshots Generation', () => {
         await page.emulateMedia({ media: 'print' });
         await page.waitForSelector('.print-only.labels-grid', { state: 'attached' });
         await page.waitForTimeout(500);
-        await page.screenshot({ path: `public/manual-assets/04-print-labels-${localeTag}.png`, fullPage: true });
+        await page.screenshot({ path: `dist/screenshots/04-print-labels-${localeTag}.png`, fullPage: true });
         
         await page.emulateMedia({ media: 'screen' });
     });

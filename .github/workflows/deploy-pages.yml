@@ -50,6 +50,9 @@ jobs:
         env:
           # Ensure Demo Mode is built into the static bundle
           VITE_DEMO_MODE: "true"
+
+      - name: Generate Manual Screenshots (Zero-Blob)
+        run: npm run screenshots
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
