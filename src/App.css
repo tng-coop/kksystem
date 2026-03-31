@@ -114,6 +114,7 @@ body {
   font-weight: 500;
   transition: all 0.2s;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .nav-tabs button:hover {

@@ -31,7 +31,8 @@ export default defineConfig({
   ],
   webServer: isRemoteUrl ? undefined : {
     // Automatically boot frontend in Demo Mode securely for tests
-    command: 'VITE_IS_E2E=true VITE_DEMO_MODE=true npm run dev:frontend',
+    // Strip the E2E flag purely when we want massive rich data for manual snapshots!
+    command: process.env.TAKE_SCREENSHOTS ? 'VITE_DEMO_MODE=true npm run dev:frontend' : 'VITE_IS_E2E=true VITE_DEMO_MODE=true npm run dev:frontend',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 10000,
