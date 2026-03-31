@@ -11,7 +11,6 @@ import {
 export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
 if (isDemoMode) {
-    console.warn("⚠️ Running in DEMO MODE. Data is persisted in localStorage only.");
     initDemoData();
 }
 

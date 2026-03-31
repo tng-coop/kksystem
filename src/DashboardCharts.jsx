@@ -1,5 +1,32 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
+
+function SafeChartWrapper({ children }) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const containerRef = useRef(null);
+  
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      if (width > 0 && height > 0) {
+        setSize({ width, height });
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  if (size.width === 0 || size.height === 0) {
+    return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
+  }
+
+  return (
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
+      {React.cloneElement(children, { width: size.width, height: size.height })}
+    </div>
+  );
+}
 
 export default function DashboardCharts({ members, contributions, t }) {
   // Aggregate data for Capital Growth and Monthly Volume
@@ -59,7 +86,7 @@ export default function DashboardCharts({ members, contributions, t }) {
       <div className="chart-card glass-card" style={{ padding: '1.5rem' }}>
         <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>{t('chart_cumulative_capital') || 'Cumulative Capital Growth'}</h3>
         <div style={{ width: '100%', height: 320 }}>
-          <ResponsiveContainer>
+          <SafeChartWrapper>
             <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
@@ -73,7 +100,7 @@ export default function DashboardCharts({ members, contributions, t }) {
               <Tooltip formatter={(value) => [formatYen(value), t('stat_total_capital') || 'Total Capital']} contentStyle={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: '#fff' }} />
               <Area type="monotone" dataKey="totalCapital" stroke="#3b82f6" fillOpacity={1} fill="url(#colorTotal)" strokeWidth={3} />
             </AreaChart>
-          </ResponsiveContainer>
+          </SafeChartWrapper>
         </div>
       </div>
 
@@ -83,7 +110,7 @@ export default function DashboardCharts({ members, contributions, t }) {
         <div className="chart-card glass-card" style={{ padding: '1.5rem' }}>
           <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>{t('chart_monthly_volume') || 'Monthly Capital Volume'}</h3>
           <div style={{ width: '100%', height: 250 }}>
-            <ResponsiveContainer>
+            <SafeChartWrapper>
               <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <XAxis dataKey="name" stroke="#cbd5e1" fontSize={12} minTickGap={20} />
                 <YAxis stroke="#cbd5e1" fontSize={12} tickFormatter={(val) => `¥${(val/1000).toLocaleString()}k`} />
@@ -91,7 +118,7 @@ export default function DashboardCharts({ members, contributions, t }) {
                 <Tooltip formatter={(value) => [formatYen(value), t('chart_monthly_volume') || 'New Capital']} contentStyle={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: '#fff' }} cursor={{fill: 'rgba(255,255,255,0.1)'}} />
                 <Bar dataKey="newCapital" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </SafeChartWrapper>
           </div>
         </div>
 
@@ -99,7 +126,7 @@ export default function DashboardCharts({ members, contributions, t }) {
         <div className="chart-card glass-card" style={{ padding: '1.5rem' }}>
           <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>{t('chart_member_status') || 'Member Breakdown'}</h3>
           <div style={{ width: '100%', height: 250, position: 'relative' }}>
-            <ResponsiveContainer>
+            <SafeChartWrapper>
               <PieChart>
                 <Pie data={memberStatusData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" stroke="none">
                   {memberStatusData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
@@ -107,7 +134,7 @@ export default function DashboardCharts({ members, contributions, t }) {
                 <Tooltip contentStyle={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: '#fff' }} />
                 <Legend verticalAlign="bottom" height={36} iconType="circle" />
               </PieChart>
-            </ResponsiveContainer>
+            </SafeChartWrapper>
             <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
               <span style={{ display: 'block', fontSize: '2rem', fontWeight: 'bold' }}>{members.length}</span>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Total</span>

@@ -16,7 +16,9 @@
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ghpages": "TEST_URL=https://tng-coop.github.io/kksystem/ playwright test",
-    "screenshots": "TAKE_SCREENSHOTS=true playwright test tests/manual-screenshots.spec.js"
+    "screenshots": "TAKE_SCREENSHOTS=true playwright test tests/manual-screenshots.spec.js",
+    "knip": "knip",
+    "postinstall": "lefthook install"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
@@ -38,6 +40,9 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "kill-port": "^2.0.1",
+    "knip": "^6.1.0",
+    "lefthook": "^2.1.4",
     "vite": "^7.3.1"
   }
 }
