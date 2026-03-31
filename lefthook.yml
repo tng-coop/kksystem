@@ -3,6 +3,6 @@ pre-commit:
   commands:
     eslint:
       glob: "*.{js,ts,jsx,tsx}"
-      run: npx eslint {staged_files}
+      run: npx eslint --fix {staged_files}
     knip:
       run: npm run knip

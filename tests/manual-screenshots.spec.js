@@ -1,7 +1,8 @@
 /* global process */
-import { test, expect } from './fixtures.js';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { expect,test } from './fixtures.js';
 
 test.describe('Manual Screenshots Generation', () => {
 

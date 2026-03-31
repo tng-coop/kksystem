@@ -1,7 +1,8 @@
-import { test, expect } from './fixtures.js';
 import AxeBuilder from '@axe-core/playwright';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { expect,test } from './fixtures.js';
 
 test.describe('Demo Mode Parallel E2E Suite', () => {
   // Since we run in "fullyParallel" mode, every test runs in its own native browser Context. 

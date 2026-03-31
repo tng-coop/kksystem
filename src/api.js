@@ -1,12 +1,11 @@
 import { 
-    initDemoData, 
-    demoGetMembers, 
-    demoAddMember, 
-    demoUpdateMember, 
-    demoGetContributions, 
     demoAddContribution, 
-    demoGetStats 
-} from './demoData.js';
+    demoAddMember, 
+    demoGetContributions, 
+    demoGetMembers, 
+    demoGetStats, 
+    demoUpdateMember, 
+    initDemoData} from './demoData.js';
 
 export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 

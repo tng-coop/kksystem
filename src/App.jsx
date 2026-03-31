@@ -1,9 +1,11 @@
-import { useState, useEffect, Fragment } from 'react'
 import './App.css'
-import { apiGetMembers, apiAddMember, apiUpdateMember, apiGetContributions, apiAddContribution, apiGetStats, isDemoMode } from './api.js'
-import jaDict from './locales/ja.json'
-import enDict from './locales/en.json'
+
+import { Fragment,useEffect, useState } from 'react'
+
+import { apiAddContribution, apiAddMember, apiGetContributions, apiGetMembers, apiGetStats, apiUpdateMember, isDemoMode } from './api.js'
 import DashboardCharts from './DashboardCharts.jsx'
+import enDict from './locales/en.json'
+import jaDict from './locales/ja.json'
 
 const dicts = { ja: jaDict, en: enDict }
 
@@ -122,6 +124,7 @@ function App() {
     setPrintData({ member, contributions: memberContribs })
     setPrintMode('certificate')
     if (navigator.webdriver) {
+      // eslint-disable-next-line react-hooks/immutability
       window.__PRINT_CALLED__ = true
       return
     }
