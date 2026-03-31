@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef,useState } from 'react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend,Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import React, { ReactElement, useEffect, useMemo, useRef, useState } from 'react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
+import type { Contribution, Member } from './types';
 
-function SafeChartWrapper({ children }) {
+function SafeChartWrapper({ children }: { children: ReactElement }) {
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     if (!containerRef.current) return;
@@ -23,15 +24,21 @@ function SafeChartWrapper({ children }) {
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
-      {React.cloneElement(children, { width: size.width, height: size.height })}
+      {React.cloneElement(children as any, { width: size.width, height: size.height })}
     </div>
   );
 }
 
-export default function DashboardCharts({ members, contributions, t }) {
+interface Props {
+  members: Member[];
+  contributions: Contribution[];
+  t: (key: string) => string;
+}
+
+export default function DashboardCharts({ members, contributions, t }: Props) {
   // Aggregate data for Capital Growth and Monthly Volume
   const monthlyData = useMemo(() => {
-    const months = {};
+    const months: Record<string, { name: string; newCapital: number; totalCapital: number }> = {};
     const today = new Date();
     // Initialize exactly past 24 months to 0
     for (let i = 23; i >= 0; i--) {
@@ -77,7 +84,7 @@ export default function DashboardCharts({ members, contributions, t }) {
   }, [members, t]);
 
   // Custom localized tooltip formatter
-  const formatYen = (val) => new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(val);
+  const formatYen = (val: number | string) => new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(Number(val));
 
   return (
     <div className="charts-grid top-margin fade-in" style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

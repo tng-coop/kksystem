@@ -2,16 +2,17 @@ import './App.css'
 
 import { Fragment,useEffect, useState } from 'react'
 
-import { apiAddContribution, apiAddMember, apiGetContributions, apiGetMembers, apiGetStats, apiUpdateMember, isDemoMode } from './api.js'
-import DashboardCharts from './DashboardCharts.jsx'
+import { apiAddContribution, apiAddMember, apiGetContributions, apiGetMembers, apiGetStats, apiUpdateMember, isDemoMode } from './api'
+import DashboardCharts from './DashboardCharts'
 import enDict from './locales/en.json'
 import jaDict from './locales/ja.json'
+import type { Contribution, Member, Stats } from './types'
 
 const dicts = { ja: jaDict, en: enDict }
 
 function App() {
   const [lang, setLang] = useState(() => localStorage.getItem('kksystem_lang') || 'ja')
-  const t = (key) => dicts[lang]?.[key] || key
+  const t = (key: string) => (dicts as any)[lang]?.[key] || key
 
   // URL override hook immediately forces the URL-specified language matrix
   useEffect(() => {
@@ -24,22 +25,22 @@ function App() {
   }, [setLang]);
 
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [printMode, setPrintMode] = useState(null) // 'labels', 'certificate', or null
-  const [printData, setPrintData] = useState(null)
-  const [members, setMembers] = useState([])
-  const [contributions, setContributions] = useState([])
-  const [stats, setStats] = useState({ activeMembers: 0, totalCapital: 0 })
+  const [printMode, setPrintMode] = useState<'labels' | 'certificate' | null>(null)
+  const [printData, setPrintData] = useState<any>(null)
+  const [members, setMembers] = useState<Member[]>([])
+  const [contributions, setContributions] = useState<(Contribution & { member_name?: string })[]>([])
+  const [stats, setStats] = useState<Stats>({ activeMembers: 0, totalCapital: 0 })
 
   // Expanded & Edit State
-  const [expandedMemberId, setExpandedMemberId] = useState(null)
-  const [editingMemberId, setEditingMemberId] = useState(null)
-  const [editFormData, setEditFormData] = useState({})
+  const [expandedMemberId, setExpandedMemberId] = useState<number | null>(null)
+  const [editingMemberId, setEditingMemberId] = useState<number | null>(null)
+  const [editFormData, setEditFormData] = useState<Partial<Member>>({})
 
   // Forms states
-  const [newMember, setNewMember] = useState({ name: '', email: '', join_date: new Date().toISOString().split('T')[0], address: '', is_living: true })
-  const [newContribution, setNewContribution] = useState({ member_id: '', amount: '', pay_date: new Date().toISOString().split('T')[0], notes: '' })
+  const [newMember, setNewMember] = useState<Partial<Member>>({ name: '', email: '', join_date: new Date().toISOString().split('T')[0], address: '', is_living: true } as any)
+  const [newContribution, setNewContribution] = useState<Partial<Contribution>>({ member_id: '' as any, amount: '' as any, pay_date: new Date().toISOString().split('T')[0], notes: '' })
 
-  const toggleExpand = (id) => {
+  const toggleExpand = (id: number) => {
     if (expandedMemberId === id) {
       setExpandedMemberId(null)
       setEditingMemberId(null)
@@ -69,39 +70,39 @@ function App() {
     fetchData()
   }, [])
 
-  const handleAddMember = async (e) => {
+  const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await apiAddMember(newMember)
-      setNewMember({ name: '', email: '', join_date: new Date().toISOString().split('T')[0], address: '', is_living: true })
+      await apiAddMember(newMember as any)
+      setNewMember({ name: '', email: '', join_date: new Date().toISOString().split('T')[0], address: '', is_living: true } as any)
       fetchData()
     } catch (error) {
       console.error("Error adding member:", error)
-      alert(error.message)
+      alert((error as Error).message)
     }
   }
 
-  const handleUpdateMember = async (e) => {
+  const handleUpdateMember = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await apiUpdateMember(editingMemberId, editFormData)
+      await apiUpdateMember(editingMemberId!, editFormData)
       setEditingMemberId(null)
       fetchData()
     } catch (error) {
       console.error("Error updating member:", error)
-      alert(error.message)
+      alert((error as Error).message)
     }
   }
 
-  const handleAddContribution = async (e) => {
+  const handleAddContribution = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await apiAddContribution(newContribution)
-      setNewContribution({ member_id: '', amount: '', pay_date: new Date().toISOString().split('T')[0], notes: '' })
+      await apiAddContribution(newContribution as any)
+      setNewContribution({ member_id: '' as any, amount: '' as any, pay_date: new Date().toISOString().split('T')[0], notes: '' })
       fetchData()
     } catch (error) {
       console.error("Error adding contribution:", error)
-      alert(error.message)
+      alert((error as Error).message)
     }
   }
 
@@ -111,7 +112,7 @@ function App() {
     setPrintData({ members: activeMembers })
     setPrintMode('labels')
     if (navigator.webdriver) {
-      window.__PRINT_CALLED__ = true
+      (window as any).__PRINT_CALLED__ = true
       return
     }
     setTimeout(() => {
@@ -120,12 +121,12 @@ function App() {
     }, 100)
   }
 
-  const handlePrintCertificate = (member, memberContribs) => {
+  const handlePrintCertificate = (member: Member, memberContribs: Contribution[]) => {
     setPrintData({ member, contributions: memberContribs })
     setPrintMode('certificate')
     if (navigator.webdriver) {
       // eslint-disable-next-line react-hooks/immutability
-      window.__PRINT_CALLED__ = true
+      (window as any).__PRINT_CALLED__ = true
       return
     }
     setTimeout(() => {
@@ -263,7 +264,7 @@ function App() {
                   <input data-testid="input-new-member-date" aria-label={t('th_join_date')} type="date" title={t('ph_join_date_optional')} value={newMember.join_date} onChange={e => setNewMember({ ...newMember, join_date: e.target.value })} />
                   <input data-testid="input-new-member-address" aria-label={t('ph_address')} type="text" placeholder={t('ph_address_optional')} value={newMember.address} onChange={e => setNewMember({ ...newMember, address: e.target.value })} />
                   <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
-                    <input data-testid="checkbox-new-member-living" aria-label={t('lbl_living')} type="checkbox" checked={newMember.is_living} onChange={e => setNewMember({ ...newMember, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
+                    <input data-testid="checkbox-new-member-living" aria-label={t('lbl_living')} type="checkbox" checked={!!newMember.is_living} onChange={e => setNewMember({ ...newMember, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
                     {t('lbl_living')}
                   </label>
                   <button data-testid="btn-submit-new-member" type="submit" className="btn-primary">{t('btn_register')}</button>
@@ -308,7 +309,7 @@ function App() {
                         </tr>
                         {isExpanded && (
                           <tr className="expanded-row-container">
-                            <td colSpan="5" style={{ padding: 0, borderBottom: '2px solid var(--primary)' }}>
+                            <td colSpan={5} style={{ padding: 0, borderBottom: '2px solid var(--primary)' }}>
                               <div className="expanded-content">
                                 {isEditing ? (
                                   <form className="profile-edit-form" onSubmit={handleUpdateMember}>
@@ -324,7 +325,7 @@ function App() {
                                         <option value="inactive">{t('status_inactive')}</option>
                                       </select>
                                       <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem' }}>
-                                        <input aria-label={t('lbl_living')} type="checkbox" checked={editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
+                                        <input aria-label={t('lbl_living')} type="checkbox" checked={!!editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: e.target.checked })} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
                                         {t('lbl_living')}
                                       </label>
                                       <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
@@ -378,7 +379,7 @@ function App() {
                       </Fragment>
                     )
                   })}
-                  {members.length === 0 && <tr><td colSpan="5" className="empty-state">{t('msg_no_members')}</td></tr>}
+                  {members.length === 0 && <tr><td colSpan={5} className="empty-state">{t('msg_no_members')}</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -391,11 +392,11 @@ function App() {
               <h2>{t('title_record_capital')}</h2>
               <form onSubmit={handleAddContribution}>
                 <div className="form-row">
-                  <select data-testid="select-contrib-member" aria-label={t('ph_select_member')} required value={newContribution.member_id} onChange={e => setNewContribution({ ...newContribution, member_id: e.target.value })}>
+                  <select data-testid="select-contrib-member" aria-label={t('ph_select_member')} required value={newContribution.member_id} onChange={e => setNewContribution({ ...newContribution, member_id: Number(e.target.value) as any })}>
                     <option value="" disabled>{t('ph_select_member')}</option>
                     {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
-                  <input data-testid="input-contrib-amount" aria-label={t('ph_amount')} type="number" step="1" min="0" placeholder={t('ph_amount')} required value={newContribution.amount} onChange={e => setNewContribution({ ...newContribution, amount: e.target.value })} />
+                  <input data-testid="input-contrib-amount" aria-label={t('ph_amount')} type="number" step="1" min="0" placeholder={t('ph_amount')} required value={newContribution.amount} onChange={e => setNewContribution({ ...newContribution, amount: Number(e.target.value) as any })} />
                   <input data-testid="input-contrib-date" aria-label={t('th_date')} type="date" required value={newContribution.pay_date} onChange={e => setNewContribution({ ...newContribution, pay_date: e.target.value })} />
                   <input data-testid="input-contrib-notes" aria-label={t('ph_notes_optional')} type="text" placeholder={t('ph_notes_optional')} value={newContribution.notes} onChange={e => setNewContribution({ ...newContribution, notes: e.target.value })} />
                   <button data-testid="btn-submit-contrib" type="submit" className="btn-primary">{t('btn_record')}</button>
@@ -425,7 +426,7 @@ function App() {
                       <td className="notes-cell">{c.notes || '-'}</td>
                     </tr>
                   ))}
-                  {contributions.length === 0 && <tr><td colSpan="5" className="empty-state">{t('msg_no_history')}</td></tr>}
+                  {contributions.length === 0 && <tr><td colSpan={5} className="empty-state">{t('msg_no_history')}</td></tr>}
                 </tbody>
               </table>
             </div>
