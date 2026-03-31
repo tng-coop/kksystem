@@ -11,6 +11,16 @@ function App() {
   const [lang, setLang] = useState(() => localStorage.getItem('kksystem_lang') || 'ja')
   const t = (key) => dicts[lang]?.[key] || key
 
+  // URL override hook immediately forces the URL-specified language matrix
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlLang = params.get('lang');
+    if (urlLang === 'en' || urlLang === 'ja') {
+      setLang(urlLang);
+      localStorage.setItem('kksystem_lang', urlLang);
+    }
+  }, [setLang]);
+
   const [activeTab, setActiveTab] = useState('dashboard')
   const [printMode, setPrintMode] = useState(null) // 'labels', 'certificate', or null
   const [printData, setPrintData] = useState(null)
@@ -207,7 +217,7 @@ function App() {
             )}
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <a data-testid="link-manual" href="manual.html" target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '4px', padding: '0.4rem 0.8rem', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 'bold' }}>
+            <a data-testid="link-manual" href={lang === 'ja' ? 'manual-jp.html' : 'manual-en.html'} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '4px', padding: '0.4rem 0.8rem', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 'bold' }}>
               📖 {lang === 'ja' ? 'マニュアル' : 'Manual'}
             </a>
             <button onClick={() => { const ny = lang === 'ja' ? 'en' : 'ja'; setLang(ny); localStorage.setItem('kksystem_lang', ny); }} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '4px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
