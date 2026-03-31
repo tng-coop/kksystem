@@ -3,8 +3,11 @@
 A high-fidelity, dual-locale (English/Japanese), serverless architecture for managing cooperative capital growth, tracking member statuses, and generating physical print-ready documentation natively in the browser.
 
 ## Official User Manual
+The KKSYSTEM features a completely automated, zero-blob dynamic documentation pipeline. 
+When the repository is pushed, GitHub Actions instantly generates a high-fidelity semantic HTML manual populated with automatically snapped UI screenshots.
 
-### 1. The Financial Dashboard
+You can view the official interactive manual here:
+**[View KKSYSTEM User Manual 📖](https://tng-coop.github.io/kksystem/manual.html)**
 Review your 24-month capital growth and member distribution at a glance. The data initializes automatically in Demo Mode using pseudo-random generation to simulate a living cooperative environment.
 
 ### 2. Member Management

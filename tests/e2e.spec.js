@@ -1,5 +1,7 @@
 import { test, expect } from './fixtures.js';
 import AxeBuilder from '@axe-core/playwright';
+import * as fs from 'fs';
+import * as path from 'path';
 
 test.describe('Demo Mode Parallel E2E Suite', () => {
   // Since we run in "fullyParallel" mode, every test runs in its own native browser Context. 
@@ -59,6 +61,23 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('tab-dashboard').click();
     await expect(page.getByTestId('stat-active-members').locator('.stat-number')).toHaveText('4');
     await expect(page.getByTestId('stat-total-capital').locator('.stat-number')).toContainText('260,000');
+  });
+
+  test('README.md Documentation Integrity Checker', async ({ request }) => {
+    // 1. Read the physical root repository README file synchronously
+    const readmeSource = fs.readFileSync(path.resolve('./README.md'), 'utf-8');
+
+    // 2. Extract every single http:// and https:// link mapped inside the markdown
+    const urlRegex = /(https?:\/\/[^\s)\]]+)/g;
+    const links = Array.from(readmeSource.matchAll(urlRegex), m => m[1]);
+
+    // 3. Issue asynchronous network requests tracking each absolute documentation URL
+    for (const link of links) {
+      if (link.includes('github.com') || link.includes('tng-coop.github.io')) {
+        const response = await request.get(link);
+        expect(response.ok(), `DEAD LINK DETECTED in README.md: ${link}`).toBeTruthy();
+      }
+    }
   });
 
   test('Duplicate Email Rejection Validation', async ({ page }) => {
