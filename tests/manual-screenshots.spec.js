@@ -1,10 +1,11 @@
+/* global process */
 import { test, expect } from './fixtures.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
 test.describe('Manual Screenshots Generation', () => {
 
-    test('Generate High-Fidelity Manual Screenshots', async ({ page, i18n }, testInfo) => {
+    test('Generate High-Fidelity Manual Screenshots', async ({ page }, testInfo) => {
         // We only want this script running when we explicitly ask for it!
         // We bypass it during standard `npm run test:e2e` execution
         test.skip(!process.env.TAKE_SCREENSHOTS, 'Only run this suite when specifically generating manual images');
@@ -50,7 +51,8 @@ test.describe('Manual Screenshots Generation', () => {
 });
 
 test.describe('Documentation Asset Integrity Check', () => {
-    test.afterAll(async () => {
+    test('Invoke post-generation integrity checker', async () => {
+        test.skip(!process.env.TAKE_SCREENSHOTS, 'Only run integrity check when parsing manual images');
         const expectedAssets = [
             '01-dashboard-en.png', '01-dashboard-jp.png', 
             '02-members-en.png', '02-members-jp.png', 
@@ -62,10 +64,5 @@ test.describe('Documentation Asset Integrity Check', () => {
             const assetPath = path.resolve(`./dist/screenshots/${asset}`);
             expect(fs.existsSync(assetPath), `Missing High-Fidelity Manual Asset (404 RISK on GH Pages): ${assetPath}`).toBeTruthy();
         }
-    });
-
-    test('Invoke post-generation integrity checker', async () => {
-        // test.afterAll executes after this dummy test satisfies parallel runners.
-        expect(true).toBe(true);
     });
 });
