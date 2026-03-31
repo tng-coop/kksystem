@@ -1,5 +1,7 @@
 /* global process */
-import { test } from './fixtures.js';
+import { test, expect } from './fixtures.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 test.describe('Manual Screenshots Generation', () => {
 
@@ -45,5 +47,20 @@ test.describe('Manual Screenshots Generation', () => {
         await page.screenshot({ path: `dist/screenshots/04-print-labels-${localeTag}.png`, fullPage: true });
         
         await page.emulateMedia({ media: 'screen' });
+
+        // INLINE PERFECT ISOLATION:
+        // Each worker natively asserts ONLY its own payload immediately after generation,
+        // completely eliminating cross-worker filesystem race contention.
+        const expectedAssets = [
+            `01-dashboard-${localeTag}.png`,
+            `02-members-${localeTag}.png`,
+            `03-contributions-${localeTag}.png`,
+            `04-print-labels-${localeTag}.png`
+        ];
+
+        for (const asset of expectedAssets) {
+            const assetPath = path.resolve(`./dist/screenshots/${asset}`);
+            expect(fs.existsSync(assetPath), `Missing High-Fidelity Manual Asset (404 RISK on GH Pages): ${assetPath}`).toBeTruthy();
+        }
     });
 });
