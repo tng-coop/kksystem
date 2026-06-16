@@ -2151,12 +2151,15 @@ function RetroWin95Mock({
     if (subView === 'dept-data') {
       const branchCategories = [
         { no: 1, name: '職員・ヘルパー', date1: '1995-10-26', date2: '2012-04-27' },
-        { no: 2, name: '組合員', date1: '1995-10-26', date2: '2012-04-27' },
-        { no: 3, name: '家族', date1: '1995-10-26', date2: '2012-04-27' },
+        { no: 2, name: '一般組合員', date1: '1995-10-26', date2: '2012-04-27' },
+        { no: 3, name: '休眠組合員', date1: '1995-10-26', date2: '2012-04-27' },
         { no: 4, name: '脱退届け希望者', date1: '1995-10-26', date2: '2012-07-23' },
         { no: 5, name: 'みなし脱退', date1: '1995-10-26', date2: '2012-04-27' },
-        { no: 6, name: '退団', date1: '1995-10-26', date2: '2012-04-27' },
-        { no: 7, name: 'ニュース不要', date1: '1995-10-26', date2: '2012-05-11' }
+        { no: 6, name: '脱退済み', date1: '1995-10-26', date2: '2012-04-27' },
+        { no: 7, name: '本年度法定脱退者', date1: '1995-10-26', date2: '2012-05-11' },
+        { no: 8, name: '死亡の連絡有(未確認)', date1: '1995-10-26', date2: '2012-04-27' },
+        { no: 9, name: 'ニュース不要', date1: '1995-10-26', date2: '2012-05-11' },
+        { no: 13, name: '家族', date1: '1995-10-26', date2: '2012-04-27' }
       ];
 
       return (
@@ -2212,16 +2215,20 @@ function RetroWin95Mock({
                 </thead>
                 <tbody>
                   {branchCategories.map(c => {
-                    let countVal = 0;
-                    if (c.name === '職員・ヘルパー') {
-                      countVal = records.filter(m => m.department === '地域支援部' || m.department === '介護福祉部' || m.department === '総務管理部' || m.department === '職員・ヘルパー').length;
-                    } else if (c.name === '組合員') {
-                      countVal = records.filter(m => m.status === 'active').length;
-                    } else if (c.name === '退団') {
-                      countVal = records.filter(m => m.status === 'inactive' || m.quit_date).length;
-                    } else if (c.name === 'ニュース不要') {
-                      countVal = records.filter(m => !m.send_dm).length;
-                    }
+                    const getMemberCategory = (m: any) => {
+                      if (m.is_living === 0) return '死亡の連絡有(未確認)';
+                      if (m.status === 'inactive' || m.quit_date) return '脱退済み';
+                      if (!m.send_dm) return 'ニュース不要';
+                      if (m.is_cooperator === 1 || m.department === '家族') return '家族';
+                      if (m.department === '地域支援部' || m.department === '職員・ヘルパー') return '職員・ヘルパー';
+                      if (m.department === '介護福祉部' || m.department === '一般組合員') return '一般組合員';
+                      if (m.department === '総務管理部' || m.department === '休眠組合員') return '休眠組合員';
+                      if (m.department === '脱退届け希望者') return '脱退届け希望者';
+                      if (m.department === 'みなし脱退') return 'みなし脱退';
+                      if (m.department === '本年度法定脱退者') return '本年度法定脱退者';
+                      return '一般組合員';
+                    };
+                    const countVal = records.filter(m => getMemberCategory(m) === c.name).length;
                     return (
                       <tr key={c.no} style={{ borderBottom: '1px solid #ccc' }}>
                         <td style={{ border: '1px solid #808080', padding: '3px' }}>{c.no}</td>
