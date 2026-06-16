@@ -15,9 +15,9 @@ test.describe('Manual Screenshots Generation', () => {
         // across BOTH Desktop JP and Desktop EN environments automatically!
         const localeTag = testInfo.project.name === 'Desktop JP' ? 'jp' : 'en';
         
-        const yugawaraDir = '/home/yasu/co/yugawara-screenshots';
-        if (!fs.existsSync(yugawaraDir)) {
-            fs.mkdirSync(yugawaraDir, { recursive: true });
+        const screenshotDir = path.resolve('./dist/screenshots');
+        if (!fs.existsSync(screenshotDir)) {
+            fs.mkdirSync(screenshotDir, { recursive: true });
         }
 
         // 1. Dashboard (With gorgeous Recharts data)
@@ -29,19 +29,19 @@ test.describe('Manual Screenshots Generation', () => {
         // Let the massive 24-month chart generator settle & render
         await page.waitForSelector('.recharts-wrapper', { timeout: 10000 });
         await page.waitForTimeout(1500); 
-        await page.screenshot({ path: `/home/yasu/co/yugawara-screenshots/01-dashboard-${localeTag}.png`, fullPage: true });
+        await page.screenshot({ path: path.join(screenshotDir, `01-dashboard-${localeTag}.png`), fullPage: true });
 
         // 2. Members Management Table
         await page.getByTestId('tab-members').click();
         await page.waitForSelector('table.data-table');
         await page.waitForTimeout(500);
-        await page.screenshot({ path: `/home/yasu/co/yugawara-screenshots/02-members-${localeTag}.png`, fullPage: true });
+        await page.screenshot({ path: path.join(screenshotDir, `02-members-${localeTag}.png`), fullPage: true });
 
         // 3. Contributions Entry
         await page.getByTestId('tab-contributions').click();
         await page.waitForSelector('.form-card');
         await page.waitForTimeout(500);
-        await page.screenshot({ path: `/home/yasu/co/yugawara-screenshots/03-contributions-${localeTag}.png`, fullPage: true });
+        await page.screenshot({ path: path.join(screenshotDir, `03-contributions-${localeTag}.png`), fullPage: true });
 
         // 4. Print App / Labels Pipeline
         await page.getByTestId('tab-members').click();
@@ -50,7 +50,7 @@ test.describe('Manual Screenshots Generation', () => {
         await page.emulateMedia({ media: 'print' });
         await page.waitForSelector('.print-only.labels-grid', { state: 'attached' });
         await page.waitForTimeout(500);
-        await page.screenshot({ path: `/home/yasu/co/yugawara-screenshots/04-print-labels-${localeTag}.png`, fullPage: true });
+        await page.screenshot({ path: path.join(screenshotDir, `04-print-labels-${localeTag}.png`), fullPage: true });
         
         await page.emulateMedia({ media: 'screen' });
 
@@ -65,7 +65,7 @@ test.describe('Manual Screenshots Generation', () => {
         ];
 
         for (const asset of expectedAssets) {
-            const assetPath = `/home/yasu/co/yugawara-screenshots/${asset}`;
+            const assetPath = path.join(screenshotDir, asset);
             expect(fs.existsSync(assetPath), `Missing High-Fidelity Manual Asset (404 RISK on GH Pages): ${assetPath}`).toBeTruthy();
         }
     });
