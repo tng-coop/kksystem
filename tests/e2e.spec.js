@@ -98,14 +98,17 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('tab-members').click();
     await expect(page.getByTestId('member-row-1')).toBeVisible();
     
-    page.once('dialog', async (dialog) => {
-      expect(dialog.message()).toContain('exists');
-      await dialog.accept();
-    });
-
     await page.getByTestId('input-new-member-name').fill('Evil Hacker');
     await page.getByTestId('input-new-member-email').fill('taro.tanaka@example.jp'); 
     await page.getByTestId('btn-submit-new-member').click();
+
+    // Verify custom modern dialog is displayed and dismiss it
+    const dialog = page.getByTestId('modern-dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText('exists');
+    await page.getByTestId('modern-dialog-ok-btn').click();
+    await expect(dialog).not.toBeVisible();
+
     await expect(page.getByText('Evil Hacker')).not.toBeVisible();
 
     // Part 2: Member Profile Editing
@@ -227,11 +230,16 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await expect(page.getByTestId('menu-chairman-btn')).toContainText('佐藤 信一');
 
     // 9. Test Exit System Locked
-    page.once('dialog', dialog => dialog.accept());
     await page.getByTestId('menu-exit-btn').click();
-    await expect(page.getByTestId('exit-overlay')).toBeVisible();
-    await page.getByTestId('btn-restart-system').click();
-    await expect(page.getByTestId('exit-overlay')).not.toBeVisible();
+    const exitDialog = page.getByTestId('modern-dialog');
+    await expect(exitDialog).toBeVisible();
+    await page.getByTestId('modern-dialog-ok-btn').click();
+    await expect(exitDialog).not.toBeVisible();
+    // Verify it transitioned to Retro mode
+    await expect(page.getByTestId('win95-db-window')).toBeVisible();
+    // Switch back to modern mode to restore state
+    await page.getByTestId('retro-btn-mode-toggle').click();
+    await expect(page.locator('.app-container')).toHaveClass(/theme-modern/);
   });
 
   test('Dual Mode Win95 Replica and Database Sync Verification', async ({ page, i18n }) => {

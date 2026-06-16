@@ -2681,8 +2681,8 @@ function App() {
   // Portal Custom Values
   const [chairmanName, setChairmanName] = useState(() => localStorage.getItem('kksystem_chairman') || '佐藤 信一')
   const [showChairmanModal, setShowChairmanModal] = useState(false)
-  const [showExitOverlay, setShowExitOverlay] = useState(false)
   const [showHudModal, setShowHudModal] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
 
   // Retro Win95 Dialog state
   const [customDialog, setCustomDialog] = useState<{
@@ -2694,10 +2694,6 @@ function App() {
   } | null>(null)
 
   const showAlert = (message: string, title?: string) => {
-    if (appMode === 'modern') {
-      window.alert(message);
-      return;
-    }
     setCustomDialog({
       title: title || (lang === 'ja' ? 'TNG Co-op 出資金管理システム' : 'TNG Co-op Capital Management System'),
       message,
@@ -2706,12 +2702,6 @@ function App() {
   };
 
   const showConfirm = (message: string, onConfirm: () => void, title?: string) => {
-    if (appMode === 'modern') {
-      if (window.confirm(message)) {
-        onConfirm();
-      }
-      return;
-    }
     setCustomDialog({
       title: title || (lang === 'ja' ? 'TNG Co-op 出資金管理システム' : 'TNG Co-op Capital Management System'),
       message,
@@ -3086,14 +3076,15 @@ function App() {
             <span>
               {lang === 'ja' ? 'TNG Co-op 出資金管理システム' : 'TNG Co-op Capital Management System'}
               {isDemoMode 
-                ? (lang === 'ja' ? ' [デモモード: ブラウザ保存]' : ' [DEMO MODE: Browser-Only]') 
+                ? (lang === 'ja' ? ' [ブラウザ保存モード: サーバー不要]' : ' [BROWSER DATABASE: Serverless]') 
                 : (lang === 'ja' ? ' [通常モード: サーバー保存]' : ' [STANDARD MODE: Server Database]')}
             </span>
             <div className="retro-close-btn" onClick={() => {
               showConfirm(
-                lang === 'ja' ? 'システムを終了しますか？' : 'Exit the system?',
+                lang === 'ja' ? '現代風（モダン）モードに切り替えますか？' : 'Would you like to switch to Modern Mode?',
                 () => {
-                  setShowExitOverlay(true);
+                  setAppMode('modern');
+                  localStorage.setItem('kksystem_app_mode', 'modern');
                 }
               );
             }}>×</div>
@@ -3107,14 +3098,14 @@ function App() {
               const helpMsg = lang === 'ja'
                 ? "TNG Co-op 出資金管理データベース\nVersion 1.0 (Win95 Replica)\n\n" +
                   "【データベース保存先モードについて】\n" +
-                  "● デモモード (ブラウザ保存)\n" +
-                  "データはブラウザのLocalStorageに保存されます。サーバー上の本番用SQLiteデータベースには影響を与えません。テストや操作の練習に適しています。\n\n" +
+                  "● ブラウザ保存モード (サーバー不要)\n" +
+                  "データはブラウザのLocalStorageに保存されます。サーバー上の本番用SQLiteデータベースには影響を与えません。バックアップファイルをエクスポート・インポートすることで、本番データを移行したりバックアップをとることができます。\n\n" +
                   "● 通常モード (サーバー保存)\n" +
                   "データはサーバー上のSQLiteファイル(kksystem.db)に直接保存されます。複数のユーザー間で同じデータが共有され、永続的に保持されます。"
                 : "TNG Co-op Capital Management Database\nVersion 1.0 (Win95 Replica)\n\n" +
                   "[About Database Modes]\n" +
-                  "* Demo Mode (Browser-Only):\n" +
-                  "Data is stored in your browser's LocalStorage. It does not connect to the server database. Perfect for testing and practicing.\n\n" +
+                  "* Browser Database (Serverless):\n" +
+                  "Data is stored in your browser's LocalStorage. It does not connect to the server database. You can export/import JSON files to migrate or backup your data.\n\n" +
                   "* Standard Mode (Server Database):\n" +
                   "Data is stored directly in the server's SQLite file (kksystem.db). Persistent and shared across all user sessions.";
               alert(helpMsg);
@@ -3196,14 +3187,15 @@ function App() {
                 onClick={() => {
                   setRetroStartMenuOpen(false);
                   showConfirm(
-                    lang === 'ja' ? 'シャットダウンしますか？' : 'Shutdown?',
+                    lang === 'ja' ? '現代風（モダン）モードに切り替えますか？' : 'Would you like to switch to Modern Mode?',
                     () => {
-                      setShowExitOverlay(true);
+                      setAppMode('modern');
+                      localStorage.setItem('kksystem_app_mode', 'modern');
                     }
                   );
                 }}
               >
-                🚪 {lang === 'ja' ? 'シャットダウン...' : 'Shutdown...'}
+                🚪 {lang === 'ja' ? '終了...' : 'Exit...'}
               </div>
             </div>
           )}
@@ -3237,18 +3229,7 @@ function App() {
           </div>
         </div>
 
-        {/* Locked Screen Overlay */}
-        {showExitOverlay && (
-          <div data-testid="exit-overlay" className="exit-overlay" style={{ zIndex: 20000 }}>
-            <div className="terminal-box">
-              <h2 style={{ color: '#ef4444' }}>⚠️ SYSTEM SHUTDOWN</h2>
-              <p style={{ color: '#94a3b8', margin: '1rem 0 2rem 0' }}>{t('msg_system_locked')}</p>
-              <button data-testid="btn-restart-system" className="btn-primary" onClick={() => setShowExitOverlay(false)}>
-                🔄 {t('btn_restart')}
-              </button>
-            </div>
-          </div>
-        )}
+
 
         {/* RETRO WIN95 CUSTOM ALERT/CONFIRM DIALOG */}
         {customDialog && (
@@ -3365,29 +3346,29 @@ function App() {
             {isDemoMode ? (
               <>
                 <span className="demo-badge" style={{ marginLeft: '1rem', fontSize: '0.8rem', background: '#ffcc00', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '4px', verticalAlign: 'middle', fontWeight: 'bold', textShadow: 'none' }}>
-                  {lang === 'ja' ? 'デモモード (ブラウザ保存)' : 'DEMO MODE (Browser-Only)'}
+                  {lang === 'ja' ? 'ブラウザ保存モード (サーバー不要)' : 'BROWSER DATABASE (Serverless)'}
                 </span>
                 <button
                   title={lang === 'ja' ? 'データベース説明' : 'Database Info'}
                   onClick={() => {
                     const helpMsg = lang === 'ja'
                       ? "【データベース保存先モードについて】\n\n" +
-                        "● デモモード (ブラウザ保存)\n" +
-                        "データはブラウザのLocalStorageに保存されます。サーバー上の本番用SQLiteデータベースには影響を与えません。テストや操作の練習に適しています。\n\n" +
+                        "● ブラウザ保存モード (サーバー不要)\n" +
+                        "データはブラウザのLocalStorageに保存されます。サーバー上の本番用SQLiteデータベースには影響を与えません。バックアップファイルをエクスポート・インポートすることで、本番データを移行したりバックアップをとることができます。\n\n" +
                         "● 通常モード (サーバー保存)\n" +
                         "データはサーバー上のSQLiteファイル(kksystem.db)に直接保存されます。複数のユーザー間で同じデータが共有され、永続的に保持されます。"
                       : "[About Database Modes]\n\n" +
-                        "* Demo Mode (Browser-Only):\n" +
-                        "Data is stored in your browser's LocalStorage. It does not connect to the server database. Perfect for testing and practicing.\n\n" +
+                        "* Browser Database (Serverless):\n" +
+                        "Data is stored in your browser's LocalStorage. It does not connect to the server database. You can export/import JSON files to migrate or backup your data.\n\n" +
                         "* Standard Mode (Server Database):\n" +
                         "Data is stored directly in the server's SQLite file (kksystem.db). Persistent and shared across all user sessions.";
-                    window.alert(helpMsg);
+                    showAlert(helpMsg, lang === 'ja' ? 'データベース説明' : 'Database Info');
                   }}
                   style={{ marginLeft: '0.5rem', fontSize: '0.7rem', background: '#0066cc', color: '#fff', border: 'none', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', verticalAlign: 'middle', fontWeight: 'bold' }}
                 >
                   ❓ HELP
                 </button>
-                <button title="Reset Demo Data" aria-label="Reset Demo Data" onClick={() => { localStorage.removeItem('kksystem_demo_data'); window.location.reload(); }} style={{ marginLeft: '0.5rem', fontSize: '0.7rem', background: '#cc0000', color: '#fff', border: 'none', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', verticalAlign: 'middle', fontWeight: 'bold' }}>↻ RESET</button>
+                <button data-testid="btn-reset-demo" title="Database Backup/Restore" aria-label="Database Backup/Restore" onClick={() => setShowResetConfirm(true)} style={{ marginLeft: '0.5rem', fontSize: '0.7rem', background: '#475569', color: '#fff', border: 'none', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', verticalAlign: 'middle', fontWeight: 'bold' }}>💾 {lang === 'ja' ? 'データ管理' : 'DATA MGMT'}</button>
               </>
             ) : (
               <span className="demo-badge" style={{ marginLeft: '1rem', fontSize: '0.8rem', background: '#28a745', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '4px', verticalAlign: 'middle', fontWeight: 'bold', textShadow: 'none' }}>
@@ -4036,7 +4017,15 @@ function App() {
                     <button data-testid="menu-chairman-btn" className="btn-secondary" onClick={() => { setChairmanName(localStorage.getItem('kksystem_chairman') || '佐藤 信一'); setShowChairmanModal(true); }} style={{ fontSize: '0.85rem' }}>
                       👔 {t('lbl_chairman')}: {chairmanName}
                     </button>
-                    <button data-testid="menu-exit-btn" className="btn-secondary" onClick={() => { showConfirm(t('msg_exit'), () => { setShowExitOverlay(true) }) }} style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#ef4444', fontSize: '0.85rem' }}>
+                    <button data-testid="menu-exit-btn" className="btn-secondary" onClick={() => {
+                      showConfirm(
+                        lang === 'ja' ? 'レトロ（Win95）モードに切り替えますか？' : 'Would you like to switch to Retro Mode?',
+                        () => {
+                          setAppMode('retro');
+                          localStorage.setItem('kksystem_app_mode', 'retro');
+                        }
+                      );
+                    }} style={{ background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#ef4444', fontSize: '0.85rem' }}>
                       🚪 {t('btn_exit')}
                     </button>
                   </div>
@@ -4235,114 +4224,169 @@ function App() {
         </div>
       )}
 
-      {/* SYSTEM LOCKED EXIT OVERLAY */}
-      {showExitOverlay && (
-        <div data-testid="exit-overlay" className="exit-overlay">
-          <div className="terminal-box">
-            <h2 style={{ color: '#ef4444' }}>⚠️ SYSTEM EXITED</h2>
-            <p style={{ color: '#94a3b8', margin: '1rem 0 2rem 0' }}>{t('msg_system_locked')}</p>
-            <button data-testid="btn-restart-system" className="btn-primary" onClick={() => setShowExitOverlay(false)}>
-              🔄 {t('btn_restart')}
-            </button>
-          </div>
-        </div>
-      )}
 
-      {/* RETRO WIN95 CUSTOM ALERT/CONFIRM DIALOG */}
+
+      {/* MODERN CUSTOM ALERT/CONFIRM DIALOG */}
       {customDialog && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.15)', zIndex: 99999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div data-testid="retro-dialog" className="retro-win95-container" style={{
-            width: '350px', padding: '3px', background: '#d4d0c8',
-            borderTop: '2px solid #ffffff', borderLeft: '2px solid #ffffff',
-            borderRight: '2px solid #808080', borderBottom: '2px solid #808080',
-            boxShadow: '1px 1px 0px 0px #000000, 2px 2px 8px rgba(0,0,0,0.35)',
-            fontFamily: "'MS UI Gothic', 'MS Sans Serif', Tahoma, Geneva, sans-serif"
-          }}>
-            {/* Title bar */}
-            <div className="retro-title-bar" style={{
-              background: 'linear-gradient(90deg, #000080, #1080d0)',
-              color: '#ffffff', padding: '3px 6px', fontWeight: 'bold', fontSize: '11px',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              userSelect: 'none'
-            }}>
-              <span>{customDialog.title}</span>
-              <div className="retro-close-btn" onClick={() => {
-                if (customDialog.type === 'confirm' && customDialog.onCancel) {
-                  customDialog.onCancel();
-                }
-                setCustomDialog(null);
-              }} style={{
-                cursor: 'default',
-                width: '14px', height: '14px',
-                background: '#d4d0c8', color: '#000',
-                borderTop: '1px solid #fff', borderLeft: '1px solid #fff',
-                borderRight: '1px solid #808080', borderBottom: '1px solid #808080',
-                textAlign: 'center', lineHeight: '11px', fontSize: '9px', fontWeight: 'bold'
-              }}>×</div>
-            </div>
-
-            {/* Content area */}
-            <div style={{ display: 'flex', padding: '15px 12px 12px 12px', alignItems: 'flex-start', background: '#d4d0c8' }}>
-              {/* Icon */}
-              <div style={{ fontSize: '28px', marginRight: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
+        <div className="modal-overlay" style={{ zIndex: 99999 }}>
+          <div data-testid="modern-dialog" className="modal-card glass-card fade-in" style={{ width: '400px', textAlign: 'left' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>
                 {customDialog.type === 'confirm' ? '❓' : (
                   customDialog.message.includes('エラー') || customDialog.message.includes('Error') || customDialog.message.includes('できません') || customDialog.message.includes('失敗')
                     ? '⚠️' : 'ℹ️'
                 )}
-              </div>
-              {/* Message text */}
-              <div style={{
-                fontSize: '12px', color: '#000', flex: 1, textAlign: 'left',
-                whiteSpace: 'pre-wrap', lineHeight: '1.4', wordBreak: 'break-all'
-              }}>
-                {customDialog.message}
-              </div>
+              </span>
+              <span>{customDialog.title}</span>
+            </h2>
+            <div style={{ whiteSpace: 'pre-wrap', marginBottom: '1.5rem', lineHeight: '1.5', fontSize: '0.95rem', wordBreak: 'break-all' }}>
+              {customDialog.message}
             </div>
-
-            {/* Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', paddingBottom: '10px', background: '#d4d0c8' }}>
-              <button
-                data-testid="retro-dialog-ok-btn"
-                className="retro-btn"
-                onClick={() => {
-                  if (customDialog.type === 'confirm' && customDialog.onConfirm) {
-                    customDialog.onConfirm();
-                  }
-                  setCustomDialog(null);
-                }}
-                style={{
-                  cursor: 'pointer', minWidth: '75px', padding: '4px 10px', fontSize: '11px',
-                  background: '#d4d0c8', borderTop: '1.5px solid #ffffff', borderLeft: '1.5px solid #ffffff',
-                  borderRight: '1.5px solid #808080', borderBottom: '1.5px solid #808080',
-                  boxShadow: '0.5px 0.5px 0px 0px #000000'
-                }}
-              >
-                {lang === 'ja' ? 'OK' : 'OK'}
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
               {customDialog.type === 'confirm' && (
                 <button
-                  data-testid="retro-dialog-cancel-btn"
-                  className="retro-btn"
+                  data-testid="modern-dialog-cancel-btn"
+                  className="btn-secondary"
                   onClick={() => {
                     if (customDialog.onCancel) {
                       customDialog.onCancel();
                     }
                     setCustomDialog(null);
                   }}
-                  style={{
-                    cursor: 'pointer', minWidth: '75px', padding: '4px 10px', fontSize: '11px',
-                    background: '#d4d0c8', borderTop: '1.5px solid #ffffff', borderLeft: '1.5px solid #ffffff',
-                    borderRight: '1.5px solid #808080', borderBottom: '1.5px solid #808080',
-                    boxShadow: '0.5px 0.5px 0px 0px #000000'
-                  }}
+                  style={{ minWidth: '80px' }}
                 >
                   {lang === 'ja' ? 'キャンセル' : 'Cancel'}
                 </button>
               )}
+              <button
+                data-testid="modern-dialog-ok-btn"
+                className="btn-primary"
+                onClick={() => {
+                  if (customDialog.type === 'confirm' && customDialog.onConfirm) {
+                    customDialog.onConfirm();
+                  }
+                  setCustomDialog(null);
+                }}
+                style={{ minWidth: '80px' }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESET CONFIRMATION MODAL */}
+      {showResetConfirm && (
+        <div className="modal-overlay" style={{ zIndex: 99999 }}>
+          <div data-testid="reset-confirm-modal" className="modal-card glass-card fade-in" style={{ width: '480px', textAlign: 'left' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffcc00' }}>
+              <span>⚠️</span>
+              <span>{lang === 'ja' ? 'データの初期化とインポート/エクスポート' : 'Reset, Import & Export Data'}</span>
+            </h2>
+            <div style={{ whiteSpace: 'pre-wrap', marginBottom: '1.5rem', lineHeight: '1.5', fontSize: '0.95rem' }}>
+              {lang === 'ja'
+                ? "デモデータを初期化しますか？初期化を実行すると、現在のデータのバックアップ（JSONファイル）が自動的にエクスポートされ、その後にLocalStorageのデータがクリアされます。"
+                : "Are you sure you want to reset the database? Running the reset will automatically export your current data as a backup JSON file first, and then clear the local storage."}
+            </div>
+
+            {/* Hidden Input for Backup File Upload */}
+            <input
+              type="file"
+              accept=".json"
+              id="backup-file-input"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  try {
+                    const text = event.target?.result as string;
+                    const parsed = JSON.parse(text);
+                    if (parsed && Array.isArray(parsed.members) && Array.isArray(parsed.contributions)) {
+                      localStorage.setItem('kksystem_demo_data', JSON.stringify(parsed));
+                      window.location.reload();
+                    } else {
+                      showAlert(lang === 'ja' ? '無効なバックアップファイル形式です。' : 'Invalid backup file format.');
+                    }
+                  } catch (err) {
+                    showAlert(lang === 'ja' ? 'ファイルの読み込みに失敗しました。' : 'Failed to read file.');
+                  }
+                };
+                reader.readAsText(file);
+              }}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                data-testid="btn-reset-cancel"
+                className="btn-secondary"
+                onClick={() => setShowResetConfirm(false)}
+                style={{ minWidth: '80px' }}
+              >
+                {lang === 'ja' ? 'キャンセル' : 'Cancel'}
+              </button>
+              <button
+                data-testid="btn-import-backup"
+                className="btn-primary"
+                onClick={() => document.getElementById('backup-file-input')?.click()}
+                style={{ background: '#0066cc', borderColor: '#0066cc', color: '#fff', minWidth: '80px' }}
+              >
+                📤 {lang === 'ja' ? 'バックアップを読み込む' : 'Import Backup'}
+              </button>
+              <button
+                data-testid="btn-export-backup"
+                className="btn-primary"
+                onClick={() => {
+                  const data = localStorage.getItem('kksystem_demo_data');
+                  if (data) {
+                    const now = new Date();
+                    const pad = (num: number) => String(num).padStart(2, '0');
+                    const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `kksystem_backup_${ts}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }
+                }}
+                style={{ background: '#28a745', borderColor: '#28a745', color: '#fff', minWidth: '80px' }}
+              >
+                📥 {lang === 'ja' ? 'バックアップを保存' : 'Export Backup'}
+              </button>
+              <button
+                data-testid="btn-reset-confirm"
+                className="btn-primary"
+                onClick={() => {
+                  // Trigger backup download first to guarantee data preservation
+                  const data = localStorage.getItem('kksystem_demo_data');
+                  if (data) {
+                    const now = new Date();
+                    const pad = (num: number) => String(num).padStart(2, '0');
+                    const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `kksystem_backup_${ts}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }
+                  // Clean and reload
+                  localStorage.removeItem('kksystem_demo_data');
+                  window.location.reload();
+                }}
+                style={{ background: '#cc0000', borderColor: '#cc0000', color: '#fff', minWidth: '80px' }}
+              >
+                ⚠️ {lang === 'ja' ? 'バックアップして初期化' : 'Backup & Reset'}
+              </button>
             </div>
           </div>
         </div>

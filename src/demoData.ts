@@ -2,7 +2,7 @@
 // LocalStorage mock backend for Demo Mode
 
 const STORAGE_KEY = 'kksystem_demo_data';
-const DEMO_DATA_VERSION = 'v3_japanese';
+const DEMO_DATA_VERSION = 'v5_800_realistic_names';
 
 // Internal utility to read/write from localStorage
 const loadData = () => {
@@ -140,28 +140,69 @@ export const initDemoData = () => {
         return;
     }
 
-    // Rich Vis Generation: 20 members, 24-month span, highly dynamic
-    const seedPeople = [
-        { name: '田中 太郎', kana: 'タナカ タロウ' },
-        { name: '佐藤 花子', kana: 'サトウ ハナコ' },
-        { name: '鈴木 一郎', kana: 'スズキ イチロウ' },
-        { name: '高橋 健二', kana: 'タカハシ ケンジ' },
-        { name: '渡辺 明', kana: 'ワタナベ アキラ' },
-        { name: '伊藤 健太', kana: 'イトウ ケンタ' },
-        { name: '山本 翔太', kana: 'ヤマモト ショウタ' },
-        { name: '中村 美咲', kana: 'ナカムラ ミサキ' },
-        { name: '小林 真由美', kana: 'コバヤシ マユミ' },
-        { name: '加藤 拓真', kana: 'カトウ タクマ' },
-        { name: '吉田 歩夢', kana: 'ヨシダ アユム' },
-        { name: '山田 裕太', kana: 'ヤマダ ユウタ' },
-        { name: '佐々木 翼', kana: 'ササキ ツバサ' },
-        { name: '清水 優子', kana: 'シミズ ユウコ' },
-        { name: '松本 蓮', kana: 'マツモト レン' },
-        { name: '木村 奈々', kana: 'キムラ ナナ' },
-        { name: '斎藤 拓海', kana: 'サイトウ タクミ' },
-        { name: '山口 直樹', kana: 'ヤマグチ ナオキ' },
-        { name: '森田 彩香', kana: 'モリタ アヤカ' },
-        { name: '近藤 健介', kana: 'コンドウ ケンスケ' }
+    // Family names (25 options)
+    const familyNames = [
+        { name: '田中', kana: 'タナカ' },
+        { name: '佐藤', kana: 'サトウ' },
+        { name: '鈴木', kana: 'スズキ' },
+        { name: '高橋', kana: 'タカハシ' },
+        { name: '渡辺', kana: 'ワタナベ' },
+        { name: '伊藤', kana: 'イトウ' },
+        { name: '山本', kana: 'ヤマモト' },
+        { name: '中村', kana: 'ナカムラ' },
+        { name: '小林', kana: 'コバヤシ' },
+        { name: '加藤', kana: 'カトウ' },
+        { name: '吉田', kana: 'ヨシダ' },
+        { name: '山田', kana: 'ヤマダ' },
+        { name: '佐々木', kana: 'ササキ' },
+        { name: '清水', kana: 'シミズ' },
+        { name: '松本', kana: 'マツモト' },
+        { name: '木村', kana: 'キムラ' },
+        { name: '斎藤', kana: 'サイトウ' },
+        { name: '山口', kana: 'ヤマグチ' },
+        { name: '森田', kana: 'モリタ' },
+        { name: '近藤', kana: 'コンドウ' },
+        { name: '岡田', kana: 'オカダ' },
+        { name: '石川', kana: 'イシカワ' },
+        { name: '前田', kana: 'マエダ' },
+        { name: '藤田', kana: 'フジタ' },
+        { name: '後藤', kana: 'ゴトウ' }
+    ];
+
+    // First names (32 options)
+    const firstNames = [
+        { name: '太郎', kana: 'タロウ', gender: '1' },
+        { name: '花子', kana: 'ハナコ', gender: '2' },
+        { name: '一郎', kana: 'イチロウ', gender: '1' },
+        { name: '健二', kana: 'ケンジ', gender: '1' },
+        { name: '明', kana: 'アキラ', gender: '1' },
+        { name: '健太', kana: 'ケンタ', gender: '1' },
+        { name: '翔太', kana: 'ショウタ', gender: '1' },
+        { name: '美咲', kana: 'ミサキ', gender: '2' },
+        { name: '真由美', kana: 'マユミ', gender: '2' },
+        { name: '拓真', kana: 'タクマ', gender: '1' },
+        { name: '歩夢', kana: 'アユム', gender: '1' },
+        { name: '裕太', kana: 'ユウタ', gender: '1' },
+        { name: '翼', kana: 'ツバサ', gender: '1' },
+        { name: '優子', kana: 'ユウコ', gender: '2' },
+        { name: '蓮', kana: 'レン', gender: '1' },
+        { name: '奈々', kana: 'ナナ', gender: '2' },
+        { name: '拓海', kana: 'タクミ', gender: '1' },
+        { name: '直樹', kana: 'ナオキ', gender: '1' },
+        { name: '彩香', kana: 'アヤカ', gender: '2' },
+        { name: '健介', kana: 'ケンスケ', gender: '1' },
+        { name: '大輔', kana: 'ダイスケ', gender: '1' },
+        { name: 'さくら', kana: 'サクラ', gender: '2' },
+        { name: '大樹', kana: 'ダイキ', gender: '1' },
+        { name: '和子', kana: 'カズコ', gender: '2' },
+        { name: '健一', kana: 'ケンイチ', gender: '1' },
+        { name: '浩', kana: 'ヒロシ', gender: '1' },
+        { name: '真司', kana: 'シンジ', gender: '1' },
+        { name: '茂', kana: 'シゲル', gender: '1' },
+        { name: '隆', kana: 'タカシ', gender: '1' },
+        { name: '洋子', kana: 'ヨウコ', gender: '2' },
+        { name: '裕子', kana: 'ユウコ', gender: '2' },
+        { name: '健司', kana: 'ケンジ', gender: '1' }
     ];
     
     let nextMemberId = 1; let nextContribId = 1;
@@ -176,22 +217,27 @@ export const initDemoData = () => {
     const departments = ['地域支援部', '介護福祉部', '総務管理部'];
     const neighborhoods = ['宮上', '吉浜', '土肥', '宮下', '中央', '城堀', '鍛冶屋'];
 
-    for (let i = 0; i < seedPeople.length; i++) {
-        const person = seedPeople[i];
+    for (let i = 0; i < 800; i++) {
+        const family = familyNames[i % familyNames.length];
+        const first = firstNames[Math.floor(i / familyNames.length) % firstNames.length];
+        const name = `${family.name} ${first.name}`;
+        const kananame = `${family.kana}${first.kana}`;
+        const gender = first.gender;
+        
         // Spread join dates intensely across the last 24 months
         const monthsAgoJoined = randInt(1, i < 3 ? 24 : 20); 
         const joinDate = new Date(today.getFullYear(), today.getMonth() - monthsAgoJoined, randInt(1, 28));
 
         const memberId = nextMemberId++;
-        const isDeceased = random() > 0.95; 
-        const isInactive = !isDeceased && random() > 0.85;
-        const isCooperator = random() > 0.85 ? 1 : 0;
+        const isDeceased = random() > 0.98; 
+        const isInactive = !isDeceased && random() > 0.95;
+        const isCooperator = random() > 0.90 ? 1 : 0;
         
         const neighborhood = neighborhoods[i % neighborhoods.length];
         
         members.push({
             id: memberId, 
-            name: person.name, 
+            name: name, 
             email: `yugawara.member${memberId}@example.co.jp`,
             join_date: joinDate.toISOString().split('T')[0],
             address: `神奈川県足柄下郡架空町${neighborhood} ${randInt(1, 4)}-${randInt(1, 20)}`,
@@ -203,8 +249,8 @@ export const initDemoData = () => {
             annual_fee_status: random() > 0.35 ? 'paid' : 'unpaid',
             is_cooperator: isCooperator,
             cert_issued: random() > 0.5 ? 1 : 0,
-            kananame: person.kana,
-            gender: random() > 0.5 ? '1' : '2',
+            kananame: kananame,
+            gender: gender,
             postal: `259-03${randInt(11, 99)}`,
             phone: `0465-63-${String(randInt(1000, 9999))}`,
             district: `${neighborhood}地区`,
@@ -213,7 +259,7 @@ export const initDemoData = () => {
             dob: `19${randInt(40, 99)}-0${randInt(1, 9)}-15`,
             remarks: `Demo remarks for member ${memberId}`,
             hope: `Demo hope details for member ${memberId}`,
-            emergency_name: `${person.name.split(' ')[0]} ${['洋子', '和夫', '明子', '健'][i % 4]}`,
+            emergency_name: `${family.name} ${['洋子', '和夫', '明子', '健'][i % 4]}`,
             emergency_zip: `259-03${randInt(11, 99)}`,
             emergency_address: `神奈川県足柄下郡架空町${neighborhoods[(i + 1) % neighborhoods.length]} ${randInt(1, 4)}-${randInt(1, 20)}`,
             emergency_phone: `090-${randInt(1000, 9999)}-${randInt(1000, 9999)}`,
@@ -232,18 +278,18 @@ export const initDemoData = () => {
         });
 
         // 2. Active recurrent funding
-        const isActiveSaver = random() > 0.4; // 60% of people contribute later
+        const isActiveSaver = random() > 0.85; // 15% of people contribute later
         if (isActiveSaver && !isInactive && !isDeceased) {
-            for (let m = monthsAgoJoined - 1; m >= 0; m--) {
-                if (random() > 0.6) { // 40% chance in any given month
-                    const payDate = new Date(today.getFullYear(), today.getMonth() - m, randInt(1, 28));
-                    contributions.push({
-                        id: nextContribId++, member_id: memberId,
-                        amount: monthlyAmounts[randInt(0, monthlyAmounts.length - 1)],
-                        pay_date: payDate.toISOString().split('T')[0],
-                        notes: 'Monthly Add', created_at: payDate.toISOString()
-                    });
-                }
+            const additionsCount = randInt(1, 2);
+            for (let add = 0; add < additionsCount; add++) {
+                const monthsAgo = randInt(1, monthsAgoJoined);
+                const payDate = new Date(today.getFullYear(), today.getMonth() - monthsAgo, randInt(1, 28));
+                contributions.push({
+                    id: nextContribId++, member_id: memberId,
+                    amount: monthlyAmounts[randInt(0, monthlyAmounts.length - 1)],
+                    pay_date: payDate.toISOString().split('T')[0],
+                    notes: 'Monthly Add', created_at: payDate.toISOString()
+                });
             }
         }
     }
