@@ -194,7 +194,7 @@ export const initDemoData = () => {
             name: person.name, 
             email: `yugawara.member${memberId}@example.co.jp`,
             join_date: joinDate.toISOString().split('T')[0],
-            address: `神奈川県足柄下郡湯河原町${neighborhood} ${randInt(1, 4)}-${randInt(1, 20)}`,
+            address: `神奈川県足柄下郡架空町${neighborhood} ${randInt(1, 4)}-${randInt(1, 20)}`,
             address2: `${['湯河原コーポ', 'グリーンメゾン', '宮上ハイツ', '吉浜ヒルズ'][i % 4]}${randInt(101, 305)}`,
             send_dm: random() > 0.3 ? 1 : 0,
             is_living: isDeceased ? 0 : 1, 
@@ -215,7 +215,7 @@ export const initDemoData = () => {
             hope: `Demo hope details for member ${memberId}`,
             emergency_name: `${person.name.split(' ')[0]} ${['洋子', '和夫', '明子', '健'][i % 4]}`,
             emergency_zip: `259-03${randInt(11, 99)}`,
-            emergency_address: `神奈川県足柄下郡湯河原町${neighborhoods[(i + 1) % neighborhoods.length]} ${randInt(1, 4)}-${randInt(1, 20)}`,
+            emergency_address: `神奈川県足柄下郡架空町${neighborhoods[(i + 1) % neighborhoods.length]} ${randInt(1, 4)}-${randInt(1, 20)}`,
             emergency_phone: `090-${randInt(1000, 9999)}-${randInt(1000, 9999)}`,
             created_at: joinDate.toISOString()
         });
