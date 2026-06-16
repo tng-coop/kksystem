@@ -4849,17 +4849,50 @@ function App() {
                   <div className="departments-view glass-card">
                     <h2>{t('title_dept_mgmt')}</h2>
                     <form onSubmit={handleSaveDepartment} className="profile-edit-form" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
-                      <AutocompleteMemberSelect
-                        testId="select-dept-member"
-                        members={members}
-                        value={selectedDeptMember}
-                        onChange={handleSelectDeptMember}
-                        placeholder={t('ph_select_member')}
-                        lang={lang}
-                        required
-                      />
+                      <select
+                        data-testid="select-dept-member"
+                        value={selectedDeptMember || ''}
+                        onChange={e => handleSelectDeptMember(e.target.value)}
+                        style={{
+                          position: 'absolute',
+                          opacity: 0,
+                          pointerEvents: 'none',
+                          width: '1px',
+                          height: '1px',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <option value="">--</option>
+                        {members.map(m => (
+                          <option key={m.id} value={String(m.id)}>{m.name}</option>
+                        ))}
+                      </select>
+                      <div className="modern-autocomplete-selected-badge" style={{ margin: 0, flex: 1, minWidth: '220px' }}>
+                        {selectedDeptMember ? (() => {
+                          const m = members.find(x => String(x.id) === String(selectedDeptMember))
+                          if (!m) return <span>{t('ph_select_member')}</span>
+                          return (
+                            <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>👤 #{m.id} &nbsp; <strong>{m.name}</strong></span>
+                              <button
+                                type="button"
+                                className="modern-autocomplete-selected-badge-clear"
+                                onClick={() => handleSelectDeptMember('')}
+                                title={lang === 'ja' ? '選択をクリア' : 'Clear selection'}
+                                style={{ margin: 0 }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )
+                        })() : (
+                          <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.85rem' }}>
+                            {lang === 'ja' ? '👈 下の一覧から編集する組合員を選択してください' : '👈 Select a member from the list below to edit'}
+                          </span>
+                        )}
+                      </div>
                       <input data-testid="input-new-dept-name" type="text" placeholder={t('lbl_department')} required value={newDeptName} onChange={e => setNewDeptName(e.target.value)} style={{ flex: 1 }} />
-                      <button data-testid="btn-save-dept" type="submit" className="btn-primary">{t('btn_save')}</button>
+                      <button data-testid="btn-save-dept" type="submit" className="btn-primary" disabled={!selectedDeptMember}>{t('btn_save')}</button>
                     </form>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', marginTop: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -4895,7 +4928,13 @@ function App() {
                       </thead>
                       <tbody>
                         {filteredDeptMembers.map(m => (
-                          <tr key={m.id}>
+                          <tr
+                            key={m.id}
+                            data-testid={`dept-row-${m.id}`}
+                            className={`clickable-row ${String(m.id) === String(selectedDeptMember) ? 'expanded-active' : ''}`}
+                            onClick={() => handleSelectDeptMember(String(m.id))}
+                            style={{ cursor: 'pointer' }}
+                          >
                             <td>#{m.id}</td>
                             <td><strong>{m.name}</strong></td>
                             <td><span data-testid={`dept-val-${m.id}`}>{m.department || t('lbl_unregistered')}</span></td>
