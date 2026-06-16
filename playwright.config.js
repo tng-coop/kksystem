@@ -21,7 +21,6 @@ export default defineConfig({
         locale: 'ja-JP',
       },
     },
-    /*
     {
       name: 'Desktop EN',
       use: {
@@ -29,7 +28,6 @@ export default defineConfig({
         locale: 'en-US',
       },
     },
-    */
   ],
   webServer: isRemoteUrl ? undefined : {
     // Automatically boot frontend in Demo Mode securely for tests
