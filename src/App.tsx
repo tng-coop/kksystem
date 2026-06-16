@@ -153,7 +153,7 @@ const AutocompleteMemberSelect: React.FC<AutocompleteMemberSelectProps> = ({
   }, [members, value])
 
   const suggestions = useMemo(() => {
-    if (!query.trim()) return []
+    if (!query.trim()) return members.slice(0, 15)
     const terms = query.toLowerCase().trim().split(/[\s　]+/)
     return members.filter(m => {
       return terms.every(term => {
