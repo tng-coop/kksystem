@@ -2615,6 +2615,19 @@ function App() {
     }
   }, [setLang]);
 
+  // Keep URL query parameter in sync with lang state
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlLang = params.get('lang');
+    const targetLang = urlLang === 'jp' ? 'ja' : urlLang;
+    if (targetLang !== lang) {
+      params.set('lang', lang);
+      const newSearch = params.toString();
+      const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}${window.location.hash}`;
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, [lang]);
+
   const [activeTab, setActiveTab] = useState('dashboard')
   const [printMode, setPrintMode] = useState<'labels' | 'certificate' | null>(null)
   const [printData, setPrintData] = useState<any>(null)
