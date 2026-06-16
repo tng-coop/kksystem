@@ -3036,6 +3036,12 @@ function App() {
   const [modernCurrentPage, setModernCurrentPage] = useState(1)
   const [modernItemsPerPage, setModernItemsPerPage] = useState(50)
 
+  // New incremental search states for subview tables
+  const [deptTableSearchQuery, setDeptTableSearchQuery] = useState('')
+  const [feeTableSearchQuery, setFeeTableSearchQuery] = useState('')
+  const [coopTableSearchQuery, setCoopTableSearchQuery] = useState('')
+  const [contribTableSearchQuery, setContribTableSearchQuery] = useState('')
+
   // Reset page when search/filter/sort options change
   useEffect(() => {
     setModernCurrentPage(1)
@@ -3178,6 +3184,86 @@ function App() {
   }, [filteredAndSortedMembers, modernCurrentPage, modernItemsPerPage])
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSortedMembers.length / modernItemsPerPage))
+
+  // Incremental filter pipeline for Department Management subview table
+  const filteredDeptMembers = useMemo(() => {
+    if (!deptTableSearchQuery.trim()) return members
+    const terms = deptTableSearchQuery.toLowerCase().trim().split(/[\s　]+/)
+    return members.filter(m => {
+      return terms.every(term => {
+        const normalizedTerm = normalizeRomaji(term)
+        if (m.name && m.name.toLowerCase().includes(term)) return true
+        if (m.department && m.department.toLowerCase().includes(term)) return true
+        if (String(m.id).includes(term)) return true
+        if (m.kananame) {
+          const lowerKana = m.kananame.toLowerCase()
+          if (lowerKana.includes(term)) return true
+          const romaji = kanaToRomaji(m.kananame)
+          if (romaji.includes(term) || normalizeRomaji(romaji).includes(normalizedTerm)) return true
+        }
+        return false
+      })
+    })
+  }, [members, deptTableSearchQuery])
+
+  // Incremental filter pipeline for Annual Fees subview table
+  const filteredFeeMembers = useMemo(() => {
+    if (!feeTableSearchQuery.trim()) return members
+    const terms = feeTableSearchQuery.toLowerCase().trim().split(/[\s　]+/)
+    return members.filter(m => {
+      return terms.every(term => {
+        const normalizedTerm = normalizeRomaji(term)
+        if (m.name && m.name.toLowerCase().includes(term)) return true
+        if (String(m.id).includes(term)) return true
+        if (m.annual_fee_status && m.annual_fee_status.toLowerCase().includes(term)) return true
+        if (m.kananame) {
+          const lowerKana = m.kananame.toLowerCase()
+          if (lowerKana.includes(term)) return true
+          const romaji = kanaToRomaji(m.kananame)
+          if (romaji.includes(term) || normalizeRomaji(romaji).includes(normalizedTerm)) return true
+        }
+        return false
+      })
+    })
+  }, [members, feeTableSearchQuery])
+
+  // Incremental filter pipeline for Cooperators subview table
+  const filteredCooperators = useMemo(() => {
+    const coops = members.filter(m => m.is_cooperator === 1 || m.is_cooperator === true)
+    if (!coopTableSearchQuery.trim()) return coops
+    const terms = coopTableSearchQuery.toLowerCase().trim().split(/[\s　]+/)
+    return coops.filter(m => {
+      return terms.every(term => {
+        const normalizedTerm = normalizeRomaji(term)
+        if (m.name && m.name.toLowerCase().includes(term)) return true
+        if (m.email && m.email.toLowerCase().includes(term)) return true
+        if (String(m.id).includes(term)) return true
+        if (m.kananame) {
+          const lowerKana = m.kananame.toLowerCase()
+          if (lowerKana.includes(term)) return true
+          const romaji = kanaToRomaji(m.kananame)
+          if (romaji.includes(term) || normalizeRomaji(romaji).includes(normalizedTerm)) return true
+        }
+        return false
+      })
+    })
+  }, [members, coopTableSearchQuery])
+
+  // Incremental filter pipeline for Contributions tab table
+  const filteredContributions = useMemo(() => {
+    if (!contribTableSearchQuery.trim()) return contributions
+    const terms = contribTableSearchQuery.toLowerCase().trim().split(/[\s　]+/)
+    return contributions.filter(c => {
+      return terms.every(term => {
+        if (c.member_name && c.member_name.toLowerCase().includes(term)) return true
+        if (c.notes && c.notes.toLowerCase().includes(term)) return true
+        if (c.pay_date && c.pay_date.toLowerCase().includes(term)) return true
+        if (String(c.member_id).includes(term)) return true
+        if (String(c.amount).includes(term)) return true
+        return false
+      })
+    })
+  }, [contributions, contribTableSearchQuery])
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -4570,7 +4656,29 @@ function App() {
             </div>
 
             <div className="table-card glass-card">
-              <h2>{t('title_capital_history_list')}</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h2 style={{ margin: 0 }}>{t('title_capital_history_list')}</h2>
+                <div className="modern-search-wrapper" style={{ maxWidth: '300px', margin: 0 }}>
+                  <span className="modern-search-icon">🔍</span>
+                  <input
+                    data-testid="contrib-table-search-input"
+                    type="text"
+                    className="modern-search-input"
+                    placeholder={lang === 'ja' ? '氏名、ID、金額、日付、備考で検索...' : 'Search by name, ID, amount, date, notes...'}
+                    value={contribTableSearchQuery}
+                    onChange={e => setContribTableSearchQuery(e.target.value)}
+                  />
+                  {contribTableSearchQuery && (
+                    <button
+                      className="modern-search-clear"
+                      onClick={() => setContribTableSearchQuery('')}
+                      title={lang === 'ja' ? '検索をクリア' : 'Clear search'}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              </div>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -4582,7 +4690,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {contributions.map(c => (
+                  {filteredContributions.map(c => (
                     <tr key={c.id}>
                       <td>#{c.id}</td>
                       <td><strong>{c.member_name}</strong></td>
@@ -4591,7 +4699,7 @@ function App() {
                       <td className="notes-cell">{c.notes || '-'}</td>
                     </tr>
                   ))}
-                  {contributions.length === 0 && <tr><td colSpan={5} className="empty-state">{t('msg_no_history')}</td></tr>}
+                  {filteredContributions.length === 0 && <tr><td colSpan={5} className="empty-state">{t('msg_no_history')}</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -4754,6 +4862,29 @@ function App() {
                       <button data-testid="btn-save-dept" type="submit" className="btn-primary">{t('btn_save')}</button>
                     </form>
 
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', marginTop: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                      <h3 style={{ margin: 0 }}>{t('tab_members')}</h3>
+                      <div className="modern-search-wrapper" style={{ maxWidth: '300px', margin: 0 }}>
+                        <span className="modern-search-icon">🔍</span>
+                        <input
+                          data-testid="dept-table-search-input"
+                          type="text"
+                          className="modern-search-input"
+                          placeholder={lang === 'ja' ? '氏名、かな、所属、IDで検索...' : 'Search by name, kana, dept, ID...'}
+                          value={deptTableSearchQuery}
+                          onChange={e => setDeptTableSearchQuery(e.target.value)}
+                        />
+                        {deptTableSearchQuery && (
+                          <button
+                            className="modern-search-clear"
+                            onClick={() => setDeptTableSearchQuery('')}
+                            title={lang === 'ja' ? '検索をクリア' : 'Clear search'}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    </div>
                     <table className="data-table">
                       <thead>
                         <tr>
@@ -4763,13 +4894,16 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {members.map(m => (
+                        {filteredDeptMembers.map(m => (
                           <tr key={m.id}>
                             <td>#{m.id}</td>
                             <td><strong>{m.name}</strong></td>
                             <td><span data-testid={`dept-val-${m.id}`}>{m.department || t('lbl_unregistered')}</span></td>
                           </tr>
                         ))}
+                        {filteredDeptMembers.length === 0 && (
+                          <tr><td colSpan={3} className="empty-state">{t('msg_no_members')}</td></tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -4777,7 +4911,29 @@ function App() {
 
                 {menuSubView === 'annual-fees' && (
                   <div className="annual-fees-view glass-card">
-                    <h2>{t('title_fee_mgmt')}</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                      <h2 style={{ margin: 0 }}>{t('title_fee_mgmt')}</h2>
+                      <div className="modern-search-wrapper" style={{ maxWidth: '300px', margin: 0 }}>
+                        <span className="modern-search-icon">🔍</span>
+                        <input
+                          data-testid="fee-table-search-input"
+                          type="text"
+                          className="modern-search-input"
+                          placeholder={lang === 'ja' ? '氏名、かな、支払状況、IDで検索...' : 'Search by name, kana, status, ID...'}
+                          value={feeTableSearchQuery}
+                          onChange={e => setFeeTableSearchQuery(e.target.value)}
+                        />
+                        {feeTableSearchQuery && (
+                          <button
+                            className="modern-search-clear"
+                            onClick={() => setFeeTableSearchQuery('')}
+                            title={lang === 'ja' ? '検索をクリア' : 'Clear search'}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    </div>
                     <table className="data-table">
                       <thead>
                         <tr>
@@ -4788,7 +4944,7 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {members.map(m => (
+                        {filteredFeeMembers.map(m => (
                           <tr key={m.id}>
                             <td>#{m.id}</td>
                             <td><strong>{m.name}</strong></td>
@@ -4804,6 +4960,9 @@ function App() {
                             </td>
                           </tr>
                         ))}
+                        {filteredFeeMembers.length === 0 && (
+                          <tr><td colSpan={4} className="empty-state">{t('msg_no_members')}</td></tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -4811,7 +4970,29 @@ function App() {
 
                 {menuSubView === 'cooperators' && (
                   <div className="cooperators-view glass-card">
-                    <h2>{t('title_cooperator_mgmt')}</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                      <h2 style={{ margin: 0 }}>{t('title_cooperator_mgmt')}</h2>
+                      <div className="modern-search-wrapper" style={{ maxWidth: '300px', margin: 0 }}>
+                        <span className="modern-search-icon">🔍</span>
+                        <input
+                          data-testid="coop-table-search-input"
+                          type="text"
+                          className="modern-search-input"
+                          placeholder={lang === 'ja' ? '氏名、かな、メール、IDで検索...' : 'Search by name, kana, email, ID...'}
+                          value={coopTableSearchQuery}
+                          onChange={e => setCoopTableSearchQuery(e.target.value)}
+                        />
+                        {coopTableSearchQuery && (
+                          <button
+                            className="modern-search-clear"
+                            onClick={() => setCoopTableSearchQuery('')}
+                            title={lang === 'ja' ? '検索をクリア' : 'Clear search'}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    </div>
                     <form onSubmit={handleAddCooperator} className="profile-edit-form" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
                       <input data-testid="input-coop-name" type="text" placeholder={t('ph_name')} required value={coopName} onChange={e => setCoopName(e.target.value)} />
                       <input data-testid="input-coop-email" type="email" placeholder={t('ph_email_optional')} value={coopEmail} onChange={e => setCoopEmail(e.target.value)} style={{ flex: 1 }} />
@@ -4828,7 +5009,7 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {members.filter(m => m.is_cooperator === 1 || m.is_cooperator === true).map(m => (
+                        {filteredCooperators.map(m => (
                           <tr key={m.id} data-testid={`coop-row-${m.id}`}>
                             <td>#{m.id}</td>
                             <td><strong>{m.name}</strong> <span className="status-badge active" style={{ marginLeft: '0.5rem', fontSize: '0.7rem' }}>{t('lbl_cooperator_badge')}</span></td>
@@ -4836,7 +5017,7 @@ function App() {
                             <td>{m.join_date}</td>
                           </tr>
                         ))}
-                        {members.filter(m => m.is_cooperator === 1 || m.is_cooperator === true).length === 0 && (
+                        {filteredCooperators.length === 0 && (
                           <tr><td colSpan={4} className="empty-state">{t('msg_no_members')}</td></tr>
                         )}
                       </tbody>
