@@ -154,18 +154,20 @@ const AutocompleteMemberSelect: React.FC<AutocompleteMemberSelectProps> = ({
 
   const suggestions = useMemo(() => {
     if (!query.trim()) return []
-    const q = query.toLowerCase().trim()
-    const normalizedQ = normalizeRomaji(q)
+    const terms = query.toLowerCase().trim().split(/[\s　]+/)
     return members.filter(m => {
-      if (m.name && m.name.toLowerCase().includes(q)) return true
-      if (String(m.id).includes(q)) return true
-      if (m.kananame) {
-        const lowerKana = m.kananame.toLowerCase()
-        if (lowerKana.includes(q)) return true
-        const romaji = kanaToRomaji(m.kananame)
-        if (romaji.includes(q) || normalizeRomaji(romaji).includes(normalizedQ)) return true
-      }
-      return false
+      return terms.every(term => {
+        const normalizedTerm = normalizeRomaji(term)
+        if (m.name && m.name.toLowerCase().includes(term)) return true
+        if (String(m.id).includes(term)) return true
+        if (m.kananame) {
+          const lowerKana = m.kananame.toLowerCase()
+          if (lowerKana.includes(term)) return true
+          const romaji = kanaToRomaji(m.kananame)
+          if (romaji.includes(term) || normalizeRomaji(romaji).includes(normalizedTerm)) return true
+        }
+        return false
+      })
     }).slice(0, 15)
   }, [members, query])
 
@@ -3112,21 +3114,23 @@ function App() {
     let result = [...members]
     
     if (modernSearchQuery.trim()) {
-      const q = modernSearchQuery.toLowerCase().trim()
-      const normalizedQ = normalizeRomaji(q)
+      const terms = modernSearchQuery.toLowerCase().trim().split(/[\s　]+/)
       result = result.filter(m => {
-        if (m.name && m.name.toLowerCase().includes(q)) return true
-        if (m.email && m.email.toLowerCase().includes(q)) return true
-        if (m.phone && m.phone.toLowerCase().includes(q)) return true
-        if (m.postal && m.postal.toLowerCase().includes(q)) return true
-        if (String(m.id).includes(q)) return true
-        if (m.kananame) {
-          const lowerKana = m.kananame.toLowerCase()
-          if (lowerKana.includes(q)) return true
-          const romaji = kanaToRomaji(m.kananame)
-          if (romaji.includes(q) || normalizeRomaji(romaji).includes(normalizedQ)) return true
-        }
-        return false
+        return terms.every(term => {
+          const normalizedTerm = normalizeRomaji(term)
+          if (m.name && m.name.toLowerCase().includes(term)) return true
+          if (m.email && m.email.toLowerCase().includes(term)) return true
+          if (m.phone && m.phone.toLowerCase().includes(term)) return true
+          if (m.postal && m.postal.toLowerCase().includes(term)) return true
+          if (String(m.id).includes(term)) return true
+          if (m.kananame) {
+            const lowerKana = m.kananame.toLowerCase()
+            if (lowerKana.includes(term)) return true
+            const romaji = kanaToRomaji(m.kananame)
+            if (romaji.includes(term) || normalizeRomaji(romaji).includes(normalizedTerm)) return true
+          }
+          return false
+        })
       })
     }
 
