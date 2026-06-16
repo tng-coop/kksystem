@@ -31,7 +31,7 @@
   "btn_record": "記録",
   "btn_print_labels": "宛名ラベル印刷 (2x10)",
   "btn_print_cert": "証明書印刷",
-  "lbl_living": "生存",
+  "lbl_deceased": "死亡",
   "th_id": "ID",
   "th_join_date": "加入日",
   "th_status": "ステータス",

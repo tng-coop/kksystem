@@ -3617,15 +3617,15 @@ function App() {
                     <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
                       <input
                         data-testid="checkbox-new-member-living"
-                        aria-label={t('lbl_living')}
+                        aria-label={t('lbl_deceased')}
                         type="checkbox"
-                        checked={!!newMember.is_living}
-                        onChange={e => setNewMember({ ...newMember, is_living: e.target.checked })}
+                        checked={!newMember.is_living}
+                        onChange={e => setNewMember({ ...newMember, is_living: !e.target.checked })}
                         onFocus={() => setActiveModernFocusField('is_living')}
                         onBlur={() => setActiveModernFocusField(null)}
                         style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }}
                       />
-                      {t('lbl_living')}
+                      {t('lbl_deceased')}
                     </label>
                     <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
                       <input
@@ -3740,8 +3740,8 @@ function App() {
                                           <option value="inactive">{t('status_inactive')}</option>
                                         </select>
                                         <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                          <input aria-label={t('lbl_living')} type="checkbox" checked={!!editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: e.target.checked })} onFocus={() => setActiveModernFocusField('is_living')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
-                                          {t('lbl_living')}
+                                          <input aria-label={t('lbl_deceased')} type="checkbox" checked={!editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: !e.target.checked })} onFocus={() => setActiveModernFocusField('is_living')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
+                                          {t('lbl_deceased')}
                                         </label>
                                         <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                           <input aria-label={t('lbl_send_dm')} type="checkbox" checked={!!editFormData.send_dm} onChange={e => setEditFormData({ ...editFormData, send_dm: e.target.checked })} onFocus={() => setActiveModernFocusField('send_dm')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />

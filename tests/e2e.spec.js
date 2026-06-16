@@ -120,7 +120,7 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('member-row-2').click();
     await page.getByTestId('btn-edit-member-2').click();
     const livingCheckbox = page.locator('.profile-edit-form input[type="checkbox"]').first();
-    await livingCheckbox.uncheck();
+    await livingCheckbox.check();
     await page.getByRole('button', { name: i18n.btn_save }).click();
     await expect(page.getByTestId('member-row-2').locator('.status-badge.inactive').filter({ hasText: i18n.status_deceased })).toBeVisible();
 

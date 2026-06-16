@@ -31,7 +31,7 @@
   "btn_record": "Record",
   "btn_print_labels": "Print Labels (2x10)",
   "btn_print_cert": "Print Certificate",
-  "lbl_living": "Living",
+  "lbl_deceased": "Deceased",
   "th_id": "ID",
   "th_join_date": "Join Date",
   "th_status": "Status",
