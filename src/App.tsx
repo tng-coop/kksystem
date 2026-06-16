@@ -2916,6 +2916,11 @@ function App() {
     }
   }, [lang]);
 
+  // Keep document title in sync with lang state
+  useEffect(() => {
+    document.title = lang === 'ja' ? 'TNG Co-op 出資金管理システム' : 'TNG Co-op Capital Management System';
+  }, [lang]);
+
   const [activeTab, setActiveTab] = useState('dashboard')
   const [printMode, setPrintMode] = useState<'labels' | 'certificate' | null>(null)
   const [printData, setPrintData] = useState<any>(null)
