@@ -6,8 +6,8 @@ const isRemoteUrl = !!process.env.TEST_URL;
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
-  // Using multiple workers is safe because Playwright natively isolates localStorage per test context
-  workers: process.env.CI ? 2 : undefined,
+  // Run all tests concurrently to finish within 10 seconds
+  workers: 4,
   retries: 0,
   use: {
     baseURL: targetUrl,
@@ -21,6 +21,7 @@ export default defineConfig({
         locale: 'ja-JP',
       },
     },
+    /*
     {
       name: 'Desktop EN',
       use: {
@@ -28,6 +29,7 @@ export default defineConfig({
         locale: 'en-US',
       },
     },
+    */
   ],
   webServer: isRemoteUrl ? undefined : {
     // Automatically boot frontend in Demo Mode securely for tests

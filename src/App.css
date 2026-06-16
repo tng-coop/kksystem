@@ -565,3 +565,1040 @@ option {
     overflow-x: auto;
   }
 }
+
+/* =========================================
+   KK System 2028 Modern vs 1995 Retro Themes
+   ========================================= */
+
+/* Theme Modern Specific Styles */
+.theme-modern .menu-title-banner {
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.2) 0%, rgba(114, 9, 183, 0.2) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-modern .menu-title-banner::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shine 4s infinite linear;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+.theme-modern .menu-banner-box {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+  color: #00f0ff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 0.75rem 2rem;
+  border-radius: 99px;
+  display: inline-block;
+  margin: 1rem 0;
+  font-size: 1.2rem;
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); text-shadow: 0 0 5px rgba(0, 240, 255, 0.5); }
+  50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); text-shadow: 0 0 15px rgba(0, 240, 255, 0.8); }
+}
+
+.theme-modern .menu-grid-container {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.theme-modern .menu-grid-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.theme-modern .menu-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.theme-modern .menu-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(135deg, var(--primary) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.theme-modern .menu-btn:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(67, 97, 238, 0.5);
+  box-shadow: 0 12px 20px rgba(67, 97, 238, 0.2);
+}
+
+.theme-modern .menu-btn:hover::before {
+  opacity: 0.15;
+}
+
+.theme-modern .menu-btn-icon {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.theme-modern .menu-btn:hover .menu-btn-icon {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: rotate(5deg) scale(1.1);
+}
+
+.theme-modern .menu-btn-content {
+  z-index: 1;
+}
+
+.theme-modern .menu-btn-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.theme-modern .menu-btn-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.theme-modern .menu-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.theme-modern .menu-status-badge {
+  background: rgba(67, 97, 238, 0.1);
+  border: 1px solid rgba(67, 97, 238, 0.3);
+  color: #4361ee;
+  box-shadow: 0 0 10px rgba(67, 97, 238, 0.1);
+  font-weight: 700;
+  padding: 0.5rem 1.5rem;
+  border-radius: 99px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* =========================================
+   Modal Dialogs & HUD Overlays
+   ========================================= */
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-card {
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+}
+
+.hud-panel {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.hud-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+/* Digital Union Member Card Styles */
+.union-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.digital-union-card {
+  width: 380px;
+  height: 220px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a52be 100%);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  position: relative;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.digital-union-card::after {
+  content: '';
+  position: absolute;
+  top: -50%; right: -30%; width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.card-logo {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 0.5rem;
+}
+
+.card-body {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.card-avatar {
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+}
+
+.card-details h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.card-details p {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin: 0.1rem 0;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 0.4rem;
+  font-size: 0.7rem;
+}
+
+.card-barcode {
+  font-family: 'Libre Barcode 39', 'Courier New', monospace;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+/* System Exit locked screen overlay */
+.exit-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: #090d16;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.terminal-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 3rem;
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.exit-btn {
+  margin-top: 1.5rem;
+}
+
+/* --- Interactive Flow Guide System Styles --- */
+.menu-btn-number-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.guide-flow-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.guide-flow-card:hover {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+}
+
+.guide-flow-card h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 0.25rem;
+}
+
+.guide-flow-card p {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.guide-progress-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 850px;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15) !important;
+  padding: 1rem 1.5rem !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 1.5rem !important;
+  align-items: center !important;
+}
+
+.guide-progress-left {
+  flex: 1;
+}
+
+.guide-progress-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.path-badge {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.path-badge.active {
+  background: #10b981;
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+}
+
+.path-badge.completed {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+.guide-pulse-ring {
+  border: 2px dashed #10b981;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.5), inset 0 0 10px rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  animation: pulse-ring-glow 1.5s infinite ease-in-out;
+  transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease;
+}
+
+@keyframes pulse-ring-glow {
+  0% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4), inset 0 0 5px rgba(16, 185, 129, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(16, 185, 129, 0.7), inset 0 0 12px rgba(16, 185, 129, 0.4);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4), inset 0 0 5px rgba(16, 185, 129, 0.2);
+    transform: scale(1);
+  }
+}
+
+.guide-floating-badge {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(16, 185, 129, 0.6);
+  color: #fff;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(16, 185, 129, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 320px;
+  min-width: 260px;
+  transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease;
+  z-index: 10001;
+  animation: slide-in-badge 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-in-badge {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.guide-badge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
+}
+
+.guide-badge-step {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #10b981;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.guide-badge-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.guide-badge-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin: 0;
+  white-space: normal;
+}
+
+.guide-badge-num {
+  background: #10b981;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.7rem;
+}
+
+.guide-success-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(9, 13, 22, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guide-success-content {
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  padding: 2.5rem !important;
+  border: 1px solid rgba(16, 185, 129, 0.5) !important;
+  box-shadow: 0 10px 40px rgba(16, 185, 129, 0.2) !important;
+}
+
+.guide-success-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  animation: bounce 0.6s infinite alternate;
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+/* --- Windows 95 Retro Styles --- */
+.retro-win95-container {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  box-shadow: 1px 1px 0px 0px #000000;
+  padding: 3px;
+  font-family: 'MS Sans Serif', Tahoma, Geneva, sans-serif, monospace;
+  color: #000000;
+  width: 280px;
+  box-sizing: border-box;
+}
+
+.retro-title-bar {
+  background: linear-gradient(90deg, #000080, #1080d0);
+  color: #ffffff;
+  padding: 3px 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.retro-close-btn {
+  background: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #808080;
+  border-bottom: 1px solid #808080;
+  box-shadow: 0.5px 0.5px 0px 0px #000000;
+  color: #000000;
+  font-size: 0.7rem;
+  line-height: 0.7rem;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-weight: bold;
+}
+
+.retro-body {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.retro-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.retro-btn {
+  background: #c0c0c0;
+  border-top: 1.5px solid #ffffff;
+  border-left: 1.5px solid #ffffff;
+  border-right: 1.5px solid #808080;
+  border-bottom: 1.5px solid #808080;
+  box-shadow: 0.5px 0.5px 0px 0px #000000;
+  color: #000000;
+  font-size: 0.7rem;
+  padding: 5px 4px;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+  font-weight: normal;
+}
+
+.retro-btn.highlighted {
+  border-top: 1.5px solid #808080;
+  border-left: 1.5px solid #808080;
+  border-right: 1.5px solid #ffffff;
+  border-bottom: 1.5px solid #ffffff;
+  background: #ffcc00 !important;
+  color: #000000 !important;
+  font-weight: bold;
+  animation: retro-pulse-glowing 1s infinite alternate;
+}
+
+.retro-back-btn {
+  background: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #808080;
+  border-bottom: 1px solid #808080;
+  box-shadow: 0.5px 0.5px 0px 0px #000000;
+  color: #000000;
+  font-size: 0.7rem;
+  padding: 3px;
+  text-align: center;
+  margin-top: 2px;
+  cursor: default;
+  align-self: center;
+  width: 50px;
+}
+
+@keyframes retro-pulse-glowing {
+  0% {
+    background: #ffcc00;
+    box-shadow: 0 0 5px rgba(255, 204, 0, 0.8);
+  }
+  100% {
+    background: #ffaa00;
+    box-shadow: 0 0 15px rgba(255, 170, 0, 1);
+  }
+}
+
+/* --- Windows 95 Overlays and Blurred Background --- */
+.retro-win95-wrapper {
+  position: relative;
+  width: 280px;
+  height: 155px;
+}
+
+.retro-win95-container.retro-blurred {
+  filter: blur(1px) grayscale(20%);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.retro-subdialog-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.subdialog-window {
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+  width: 100% !important;
+}
+
+.app-container.guide-padding {
+  padding-bottom: 240px !important;
+}
+
+/* --- Win95 Transition Map Styles --- */
+.win95-map-card {
+  background: #d4d0c8 !important;
+  border-top: 2px solid #ffffff !important;
+  border-left: 2px solid #ffffff !important;
+  border-right: 2px solid #808080 !important;
+  border-bottom: 2px solid #808080 !important;
+  box-shadow: 2px 2px 0px 0px #000000 !important;
+  border-radius: 0px !important;
+  font-family: monospace;
+}
+
+.map-node-btn {
+  background: #c0c0c0;
+  border-top: 1.5px solid #ffffff;
+  border-left: 1.5px solid #ffffff;
+  border-right: 1.5px solid #808080;
+  border-bottom: 1.5px solid #808080;
+  box-shadow: 0.5px 0.5px 0px 0px #000000;
+  color: #000000;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: monospace;
+  outline: none;
+  text-align: left;
+}
+
+.map-node-btn:hover {
+  background: #d4d0c8;
+}
+
+.map-node-btn:active {
+  border-top: 1.5px solid #808080;
+  border-left: 1.5px solid #808080;
+  border-right: 1.5px solid #ffffff;
+  border-bottom: 1.5px solid #ffffff;
+  box-shadow: 0px 0px 0px 0px #000000;
+}
+
+.map-node-btn.sub-node {
+  font-size: 0.75rem;
+  background: #e4e0d8;
+}
+
+.map-node-btn.map-node-active {
+  background: #000080 !important;
+  color: #ffffff !important;
+  font-weight: bold;
+  border-top: 1.5px solid #808080;
+  border-left: 1.5px solid #808080;
+  border-right: 1.5px solid #ffffff;
+  border-bottom: 1.5px solid #ffffff;
+  box-shadow: inset 1px 1px 0px #000;
+}
+
+.retro-btn-action {
+  background: #c0c0c0;
+  border-top: 1.5px solid #ffffff;
+  border-left: 1.5px solid #ffffff;
+  border-right: 1.5px solid #808080;
+  border-bottom: 1.5px solid #808080;
+  box-shadow: 0.5px 0.5px 0px 0px #000000;
+  color: #000000;
+  cursor: pointer;
+}
+
+.retro-btn-action:active {
+  border-top: 1.5px solid #808080;
+  border-left: 1.5px solid #808080;
+  border-right: 1.5px solid #ffffff;
+  border-bottom: 1.5px solid #ffffff;
+  box-shadow: 0px 0px 0px 0px #000000;
+}
+
+.retro-field-highlighted {
+  outline: 2px solid #ff4500 !important;
+  box-shadow: 0 0 10px #ff4500, inset 1px 1px 0px #000 !important;
+  animation: retro-pulse-glow 1.5s infinite ease-in-out !important;
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+@keyframes retro-pulse-glow {
+  0% { box-shadow: 0 0 5px #ff4500, inset 1px 1px 0px #000; }
+  50% { box-shadow: 0 0 15px #ff4500, inset 1px 1px 0px #000; }
+  100% { box-shadow: 0 0 5px #ff4500, inset 1px 1px 0px #000; }
+}
+
+/* --- Win95 desktop styling --- */
+.win95-desktop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #008080; /* Classic Teal */
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  user-select: none;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.desktop-icons {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 80px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.desktop-icon-img {
+  font-size: 2rem;
+  filter: drop-shadow(1px 1px 0px #000);
+}
+
+.desktop-icon-text {
+  color: #fff;
+  font-size: 0.75rem;
+  text-shadow: 1px 1px 1px #000;
+  word-break: break-word;
+  background-color: transparent;
+  padding: 1px 4px;
+}
+
+.win95-taskbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  box-shadow: 0 -1px 0 #808080;
+  display: flex;
+  align-items: center;
+  padding: 2px 6px;
+  box-sizing: border-box;
+  z-index: 10000;
+  gap: 6px;
+}
+
+.win95-start-btn {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  box-shadow: 0.5px 0.5px 0px 0px #000000;
+  padding: 2px 10px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  height: 28px;
+  color: #000;
+  box-sizing: border-box;
+}
+
+.win95-start-btn:active, .win95-start-btn.active {
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0px #000;
+  padding: 3px 9px 1px 11px;
+}
+
+.win95-tray {
+  margin-left: auto;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  background: #c0c0c0;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #000;
+  box-sizing: border-box;
+}
+
+.win95-start-menu {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  width: 220px;
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  z-index: 10001;
+  padding: 2px;
+}
+
+.win95-start-menu-item {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: #000;
+}
+
+.win95-start-menu-item:hover {
+  background: #000080;
+  color: #fff;
+}
+
+.win95-menubar {
+  display: flex;
+  background: #c0c0c0;
+  padding: 2px 8px;
+  border-bottom: 1px solid #808080;
+  font-size: 0.75rem;
+  gap: 16px;
+  color: #000;
+}
+
+.win95-menubar .menu-item {
+  cursor: pointer;
+}
+
+.retro-body select {
+  font-size: 0.75rem;
+  padding: 2px;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  background: #fff;
+  color: #000;
+}
+
+.win95-taskbar-item {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  box-shadow: 0.5px 0.5px 0px 0px #000000;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #000;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+.win95-taskbar-item.active {
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0px #000;
+  background: #dfdfdf;
+  font-weight: bold;
+}
+
+/* Scoped overrides for retro inputs and buttons to prevent leakage of modern styles */
+.retro-win95-container input[type="text"],
+.retro-win95-container input[type="date"],
+.retro-win95-container input[type="email"],
+.retro-win95-container select,
+.retro-win95-container textarea,
+.win95-custom-input,
+.win95-custom-select {
+  flex: none !important;
+  min-width: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  padding: 2px 4px !important;
+  font-size: 12px !important;
+  font-family: 'MS UI Gothic', 'MS Sans Serif', sans-serif !important;
+  box-shadow: none !important;
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-right: 2px solid #ffffff !important;
+  border-bottom: 2px solid #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.retro-win95-container button,
+.retro-win95-container .retro-btn,
+.retro-win95-container .retro-back-btn,
+.retro-win95-container .win95-custom-btn {
+  border-radius: 0 !important;
+  box-shadow: 1px 1px 0px 0px #000000 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+}

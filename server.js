@@ -36,23 +36,56 @@ app.get('/api/members/:id', (req, res) => {
 
 // Add a new member
 app.post('/api/members', (req, res) => {
-    const { name, email, join_date, address, is_living } = req.body;
+    const { 
+        name, email, join_date, address, address2, send_dm, is_living, department, annual_fee_status, is_cooperator, cert_issued,
+        kananame, gender, postal, phone, district, delivery, quit_date, dob, remarks, hope, emergency_name, emergency_zip, emergency_address, emergency_phone
+    } = req.body;
 
-    // Name is the ONLY required field now
     if (!name) {
         return res.status(400).json({ error: 'Name is required' });
     }
 
     try {
-        const insert = db.prepare('INSERT INTO members (name, email, join_date, address, is_living) VALUES (?, ?, ?, ?, ?)');
-        // Convert empty strings to null for the database
+        const insert = db.prepare(`
+            INSERT INTO members (
+                name, email, join_date, address, address2, send_dm, is_living, department, annual_fee_status, is_cooperator, cert_issued,
+                kananame, gender, postal, phone, district, delivery, quit_date, dob, remarks, hope, emergency_name, emergency_zip, emergency_address, emergency_phone
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
         const dbEmail = email || null;
         const dbJoinDate = join_date || null;
         const dbAddress = address || null;
+        const dbAddress2 = address2 || null;
+        const dbSendDm = send_dm === undefined ? 1 : (send_dm ? 1 : 0);
         const dbIsLiving = is_living === undefined ? 1 : (is_living ? 1 : 0);
+        const dbDept = department || null;
+        const dbFee = annual_fee_status || 'unpaid';
+        const dbCoop = is_cooperator ? 1 : 0;
+        const dbCert = cert_issued ? 1 : 0;
+        const dbKananame = kananame || null;
+        const dbGender = gender || null;
+        const dbPostal = postal || null;
+        const dbPhone = phone || null;
+        const dbDistrict = district || null;
+        const dbDelivery = delivery || null;
+        const dbQuitDate = quit_date || null;
+        const dbDob = dob || null;
+        const dbRemarks = remarks || null;
+        const dbHope = hope || null;
+        const dbEmergName = emergency_name || null;
+        const dbEmergZip = emergency_zip || null;
+        const dbEmergAddress = emergency_address || null;
+        const dbEmergPhone = emergency_phone || null;
 
-        const info = insert.run(name, dbEmail, dbJoinDate, dbAddress, dbIsLiving);
-        res.status(201).json({ id: info.lastInsertRowid, name, email: dbEmail, join_date: dbJoinDate, address: dbAddress, is_living: dbIsLiving, status: 'active' });
+        const info = insert.run(
+            name, dbEmail, dbJoinDate, dbAddress, dbAddress2, dbSendDm, dbIsLiving, dbDept, dbFee, dbCoop, dbCert,
+            dbKananame, dbGender, dbPostal, dbPhone, dbDistrict, dbDelivery, dbQuitDate, dbDob, dbRemarks, dbHope, dbEmergName, dbEmergZip, dbEmergAddress, dbEmergPhone
+        );
+        res.status(201).json({ 
+            id: info.lastInsertRowid, name, email: dbEmail, join_date: dbJoinDate, address: dbAddress, address2: dbAddress2, send_dm: dbSendDm, is_living: dbIsLiving, department: dbDept, annual_fee_status: dbFee, is_cooperator: dbCoop, cert_issued: dbCert,
+            kananame: dbKananame, gender: dbGender, postal: dbPostal, phone: dbPhone, district: dbDistrict, delivery: dbDelivery, quit_date: dbQuitDate, dob: dbDob, remarks: dbRemarks, hope: dbHope, emergency_name: dbEmergName, emergency_zip: dbEmergZip, emergency_address: dbEmergAddress, emergency_phone: dbEmergPhone,
+            status: 'active' 
+        });
     } catch (err) {
         if (err.message.includes('UNIQUE constraint failed')) {
             return res.status(409).json({ error: 'A member with this email already exists' });
@@ -63,7 +96,10 @@ app.post('/api/members', (req, res) => {
 
 // Update an existing member
 app.put('/api/members/:id', (req, res) => {
-    const { name, email, join_date, address, is_living, status } = req.body;
+    const { 
+        name, email, join_date, address, address2, send_dm, is_living, status, department, annual_fee_status, is_cooperator, cert_issued,
+        kananame, gender, postal, phone, district, delivery, quit_date, dob, remarks, hope, emergency_name, emergency_zip, emergency_address, emergency_phone
+    } = req.body;
     const memberId = req.params.id;
 
     if (!name) {
@@ -73,23 +109,51 @@ app.put('/api/members/:id', (req, res) => {
     try {
         const update = db.prepare(`
             UPDATE members 
-            SET name = ?, email = ?, join_date = ?, address = ?, is_living = ?, status = ? 
+            SET name = ?, email = ?, join_date = ?, address = ?, address2 = ?, send_dm = ?, is_living = ?, status = ?, department = ?, annual_fee_status = ?, is_cooperator = ?, cert_issued = ?,
+                kananame = ?, gender = ?, postal = ?, phone = ?, district = ?, delivery = ?, quit_date = ?, dob = ?, remarks = ?, hope = ?, emergency_name = ?, emergency_zip = ?, emergency_address = ?, emergency_phone = ?
             WHERE id = ?
         `);
 
         const dbEmail = email || null;
         const dbJoinDate = join_date || null;
         const dbAddress = address || null;
+        const dbAddress2 = address2 || null;
+        const dbSendDm = send_dm ? 1 : 0;
         const dbIsLiving = is_living ? 1 : 0;
         const dbStatus = status || 'active';
+        const dbDept = department || null;
+        const dbFee = annual_fee_status || 'unpaid';
+        const dbCoop = is_cooperator ? 1 : 0;
+        const dbCert = cert_issued ? 1 : 0;
+        const dbKananame = kananame || null;
+        const dbGender = gender || null;
+        const dbPostal = postal || null;
+        const dbPhone = phone || null;
+        const dbDistrict = district || null;
+        const dbDelivery = delivery || null;
+        const dbQuitDate = quit_date || null;
+        const dbDob = dob || null;
+        const dbRemarks = remarks || null;
+        const dbHope = hope || null;
+        const dbEmergName = emergency_name || null;
+        const dbEmergZip = emergency_zip || null;
+        const dbEmergAddress = emergency_address || null;
+        const dbEmergPhone = emergency_phone || null;
 
-        const info = update.run(name, dbEmail, dbJoinDate, dbAddress, dbIsLiving, dbStatus, memberId);
+        const info = update.run(
+            name, dbEmail, dbJoinDate, dbAddress, dbAddress2, dbSendDm, dbIsLiving, dbStatus, dbDept, dbFee, dbCoop, dbCert,
+            dbKananame, dbGender, dbPostal, dbPhone, dbDistrict, dbDelivery, dbQuitDate, dbDob, dbRemarks, dbHope, dbEmergName, dbEmergZip, dbEmergAddress, dbEmergPhone,
+            memberId
+        );
 
         if (info.changes === 0) {
             return res.status(404).json({ error: 'Member not found' });
         }
 
-        res.json({ id: memberId, name, email: dbEmail, join_date: dbJoinDate, address: dbAddress, is_living: dbIsLiving, status: dbStatus });
+        res.json({ 
+            id: memberId, name, email: dbEmail, join_date: dbJoinDate, address: dbAddress, address2: dbAddress2, send_dm: dbSendDm, is_living: dbIsLiving, status: dbStatus, department: dbDept, annual_fee_status: dbFee, is_cooperator: dbCoop, cert_issued: dbCert,
+            kananame: dbKananame, gender: dbGender, postal: dbPostal, phone: dbPhone, district: dbDistrict, delivery: dbDelivery, quit_date: dbQuitDate, dob: dbDob, remarks: dbRemarks, hope: dbHope, emergency_name: dbEmergName, emergency_zip: dbEmergZip, emergency_address: dbEmergAddress, emergency_phone: dbEmergPhone
+        });
     } catch (err) {
         if (err.message.includes('UNIQUE constraint failed')) {
             return res.status(409).json({ error: 'A member with this email already exists' });
