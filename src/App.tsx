@@ -577,50 +577,101 @@ function RetroWin95Mock({
         return true;
       });
 
+      const formatUpdateDate = (dateStr: string | undefined) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const r = String(d.getDate()).padStart(2, '0');
+        return `${y}/${m}/${r}`;
+      };
+
+      const getCreatedDateStr = () => {
+        const d = new Date();
+        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} 作成`;
+      };
+
       return (
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
-          <div className="retro-body" style={{ background: '#fff', color: '#000', padding: '10px', height: '580px', overflowY: 'auto', fontFamily: "'MS UI Gothic', sans-serif", textAlign: 'left' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #000', paddingBottom: '4px', marginBottom: '10px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 'bold' }}>◆ 組合員 一覧 ◆</span>
-              <span style={{ fontSize: '11px' }}>2026/06/16 作成 &nbsp;&nbsp; Page 1</span>
+          <div className="retro-body" style={{ background: '#fff', color: '#000', padding: '15px', height: '580px', overflowY: 'auto', fontFamily: "'MS UI Gothic', sans-serif", textAlign: 'left' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #000', paddingBottom: '4px', marginBottom: '10px', width: '860px', margin: '0 auto' }}>
+              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>◆ 組 合 員 一 覧 ◆</span>
+              <span style={{ fontSize: '11px' }}>{getCreatedDateStr()} &nbsp;&nbsp;&nbsp;&nbsp; Page 1</span>
             </div>
             
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', textAlign: 'left', color: '#000' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #000', fontWeight: 'bold' }}>
-                  <th>組合員NO</th>
-                  <th>氏名</th>
-                  <th>かな</th>
-                  <th>性別</th>
-                  <th>住所</th>
-                  <th>電話番号</th>
-                  <th>学区</th>
-                  <th>所属</th>
-                  <th>加入年月日</th>
-                  <th>脱退年月日</th>
-                  <th>死亡</th>
+            <table style={{ width: '860px', margin: '0 auto', display: 'block', color: '#000', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead style={{ display: 'block' }}>
+                <tr style={{ display: 'block', position: 'relative', width: '100%', borderBottom: '1px solid #000', height: '36px', fontSize: '10px', fontWeight: 'bold', margin: '5px 0 10px 0' }}>
+                  {/* Row 1 Headers */}
+                  <th style={{ display: 'block', position: 'absolute', left: '0px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>組合員NO</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '80px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>氏 名</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '190px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>かな</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '320px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>郵便番号 &nbsp;&nbsp; 住 所 1</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '600px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>住 所 2</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '760px', bottom: '18px', width: '100px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>電 話</th>
+
+                  {/* Row 2 Headers */}
+                  <th style={{ display: 'block', position: 'absolute', left: '80px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>所属ＮＯ</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '140px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>所属名</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '320px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>生年月日</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '430px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>年齢</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '485px', bottom: '2px', width: '65px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>出資金</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '560px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>加入日</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '650px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>脱退日</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '760px', bottom: '2px', width: '100px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>更新日</th>
                 </tr>
               </thead>
-              <tbody>
-                {filtered.map(m => (
-                  <tr key={m.id} style={{ borderBottom: '1px dashed #ccc' }}>
-                    <td>{m.id}</td>
-                    <td><strong>{m.name}</strong></td>
-                    <td>{m.kananame || '-'}</td>
-                    <td>{m.gender === '1' ? '男' : m.gender === '2' ? '女' : '-'}</td>
-                    <td>{m.postal} {m.address} {m.address2}</td>
-                    <td>{m.phone || '-'}</td>
-                    <td>{m.district || '-'}</td>
-                    <td>{m.department || '-'}</td>
-                    <td>{m.join_date || '-'}</td>
-                    <td>{m.quit_date || '-'}</td>
-                    <td>{m.is_living ? '' : '死亡'}</td>
-                  </tr>
-                ))}
+
+              <tbody style={{ display: 'block', width: '100%' }}>
+                {filtered.map(m => {
+                  const mContribs = dbContributions ? dbContributions.filter(c => c.member_id === m.id) : [];
+                  const totalAmount = mContribs.reduce((sum, c) => sum + Number(c.amount), 0);
+                  const formattedCapital = new Intl.NumberFormat('ja-JP').format(totalAmount) + '円';
+                  
+                  const dobFormatted = m.dob ? m.dob.replace(/-/g, '/') + '生' : '';
+                  const { ageStr } = parseDob(m.dob);
+
+                  let deptNo = '';
+                  let deptName = '';
+                  if (m.department === '地域支援部') { deptNo = '1'; deptName = '職員・ヘルパー'; }
+                  else if (m.department === '介護福祉部') { deptNo = '2'; deptName = '一般組合員'; }
+                  else if (m.department === '総務管理部') { deptNo = '3'; deptName = '総務管理部'; }
+
+                  const updateDateFormatted = formatUpdateDate(m.created_at || m.join_date);
+
+                  return (
+                    <tr key={m.id} style={{ display: 'block', position: 'relative', height: '36px', fontSize: '10px', borderBottom: '1px solid #000', padding: '3px 0' }}>
+                      {/* Row 1 Data */}
+                      <td style={{ display: 'block', position: 'absolute', left: '0px', top: '3px', width: '70px', textAlign: 'right' }}>{m.id}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '80px', top: '3px', fontWeight: 'bold' }}>{m.name}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '190px', top: '3px' }}>{m.kananame || ''}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '320px', top: '3px' }}>
+                        {m.postal ? `〒 ${m.postal} ` : ''}{m.address || ''}
+                      </td>
+                      <td style={{ display: 'block', position: 'absolute', left: '600px', top: '3px' }}>{m.address2 || ''}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '760px', top: '3px', width: '100px', textAlign: 'right' }}>{m.phone || ''}</td>
+
+                      {/* Row 2 Data */}
+                      <td style={{ display: 'block', position: 'absolute', left: '80px', top: '19px', width: '30px', textAlign: 'right' }}>{deptNo}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '140px', top: '19px' }}>{deptName}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '320px', top: '19px' }}>{dobFormatted}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '430px', top: '19px' }}>{ageStr}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '485px', top: '19px', width: '65px', textAlign: 'right' }}>{formattedCapital}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '560px', top: '19px' }}>{m.join_date ? m.join_date.replace(/-/g, '/') : ''}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '650px', top: '19px' }}>{m.quit_date ? m.quit_date.replace(/-/g, '/') : ''}</td>
+                      <td style={{ display: 'block', position: 'absolute', left: '760px', top: '19px', width: '100px', textAlign: 'right' }}>{updateDateFormatted}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+
+            {filtered.length === 0 && (
+              <div style={{ fontSize: '13px', color: '#888', marginTop: '50px', textAlign: 'center' }}>該当する組合員データはありません。</div>
+            )}
             
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '15px', borderTop: '1px solid #000', paddingTop: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', width: '860px', margin: '20px auto 0 auto', borderTop: '1px solid #000', paddingTop: '10px' }}>
               <button className="retro-btn" onClick={() => setSubView('list-selector')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>閉じる</button>
             </div>
           </div>
@@ -1109,7 +1160,7 @@ function RetroWin95Mock({
             </select>
             <div style={{ ...labelStyle, left: '120px', top: '217px', color: '#0000ff' }}>
               {formData.department === '地域支援部' ? '職員・ヘルパー' : 
-               formData.department === '介護福祉部' ? '介護福祉部' : 
+               formData.department === '介護福祉部' ? '一般組合員' : 
                formData.department === '総務管理部' ? '総務管理部' : 
                (formData.department || '未所属')}
             </div>

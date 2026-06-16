@@ -26,6 +26,7 @@ export interface Member {
   emergency_zip?: string;
   emergency_address?: string;
   emergency_phone?: string;
+  created_at?: string;
 }
 
 export interface Contribution {
