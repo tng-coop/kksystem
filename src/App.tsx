@@ -793,11 +793,18 @@ function RetroWin95Mock({
                   <tr>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>地区ＮＯ</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
-                      <select className="win95-custom-select" value={withdrawerDistrict} onChange={e => setWithdrawerDistrict(e.target.value)} style={{ width: '100px', height: '20px' }}>
+                      <select data-testid="retro-withdrawer-select-district" className="win95-custom-select" value={withdrawerDistrict} onChange={e => setWithdrawerDistrict(e.target.value)} style={{ width: '100px', height: '20px' }}>
                         <option value=""></option>
-                        {Array.from(new Set(records.map(m => m.district).filter(Boolean))).map(d => (
-                          <option key={d} value={d}>{d}</option>
-                        ))}
+                        <option value="城堀地区">城堀地区</option>
+                        <option value="中央地区">中央地区</option>
+                        <option value="宮下地区">宮下地区</option>
+                        <option value="土肥地区">土肥地区</option>
+                        <option value="吉浜地区">吉浜地区</option>
+                        <option value="鍛冶屋地区">鍛冶屋地区</option>
+                        <option value="宮上地区">宮上地区</option>
+                        {withdrawerDistrict && !['城堀地区', '中央地区', '宮下地区', '土肥地区', '吉浜地区', '鍛冶屋地区', '宮上地区'].includes(withdrawerDistrict) && (
+                          <option value={withdrawerDistrict}>{withdrawerDistrict}</option>
+                        )}
                       </select>
                     </td>
                   </tr>
@@ -1066,14 +1073,25 @@ function RetroWin95Mock({
 
             {/* 学区 */}
             <div style={{ ...labelStyle, left: '185px', top: '180px' }}>学区</div>
-            <input
+            <select
               data-testid="retro-input-district"
-              className="win95-custom-input"
-              type="text"
+              className="win95-custom-select"
               value={formData.district || ''}
               onChange={e => setFormData({ ...formData, district: e.target.value })}
               style={{ position: 'absolute', left: '225px', top: '180px', width: '150px', height: '20px' }}
-            />
+            >
+              <option value=""></option>
+              <option value="城堀地区">城堀地区</option>
+              <option value="中央地区">中央地区</option>
+              <option value="宮下地区">宮下地区</option>
+              <option value="土肥地区">土肥地区</option>
+              <option value="吉浜地区">吉浜地区</option>
+              <option value="鍛冶屋地区">鍛冶屋地区</option>
+              <option value="宮上地区">宮上地区</option>
+              {formData.district && !['城堀地区', '中央地区', '宮下地区', '土肥地区', '吉浜地区', '鍛冶屋地区', '宮上地区'].includes(formData.district) && (
+                <option value={formData.district}>{formData.district}</option>
+              )}
+            </select>
 
             {/* 所属 */}
             <div style={{ ...labelStyle, left: '20px', top: '215px' }}>所属</div>
