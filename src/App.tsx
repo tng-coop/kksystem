@@ -3113,14 +3113,21 @@ function App() {
     
     if (modernSearchQuery.trim()) {
       const q = modernSearchQuery.toLowerCase().trim()
-      result = result.filter(m => 
-        (m.name && m.name.toLowerCase().includes(q)) ||
-        (m.kananame && m.kananame.toLowerCase().includes(q)) ||
-        (m.email && m.email.toLowerCase().includes(q)) ||
-        (m.phone && m.phone.toLowerCase().includes(q)) ||
-        (m.postal && m.postal.toLowerCase().includes(q)) ||
-        (String(m.id).includes(q))
-      )
+      const normalizedQ = normalizeRomaji(q)
+      result = result.filter(m => {
+        if (m.name && m.name.toLowerCase().includes(q)) return true
+        if (m.email && m.email.toLowerCase().includes(q)) return true
+        if (m.phone && m.phone.toLowerCase().includes(q)) return true
+        if (m.postal && m.postal.toLowerCase().includes(q)) return true
+        if (String(m.id).includes(q)) return true
+        if (m.kananame) {
+          const lowerKana = m.kananame.toLowerCase()
+          if (lowerKana.includes(q)) return true
+          const romaji = kanaToRomaji(m.kananame)
+          if (romaji.includes(q) || normalizeRomaji(romaji).includes(normalizedQ)) return true
+        }
+        return false
+      })
     }
 
     if (modernSearchDept) {
