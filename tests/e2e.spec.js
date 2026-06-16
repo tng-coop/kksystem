@@ -282,7 +282,9 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await expect(newMemberRow).toContainText('Retro Tester');
   });
 
-  test('Retro Print Target Selector Filtering', async ({ page }) => {
+  test('Retro Print Target Selector Filtering', async ({ page, i18n }) => {
+    const isEN = i18n.__lang === 'en';
+
     // 1. Switch to retro mode using modern header toggle
     await page.getByTestId('btn-mode-toggle').click();
     await expect(page.getByTestId('win95-db-window')).toBeVisible();
@@ -291,11 +293,11 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('retro-menu-btn-1').click();
 
     // 2.5 Go back to member management menu from the ledger view
-    await page.locator('button.win95-custom-btn', { hasText: '戻る' }).click();
+    await page.locator('button.win95-custom-btn', { hasText: isEN ? 'Back' : '戻る' }).click();
 
-    // 3. Click "組合員一覧印刷"
-    await page.click('button:has-text("組合員一覧印刷")');
-    await expect(page.getByText('印刷対象指定画面')).toBeVisible();
+    // 3. Click "組合員一覧印刷" (or "Print Member List")
+    await page.click(`button:has-text("${isEN ? 'Print Member List' : '組合員一覧印刷'}")`);
+    await expect(page.getByText(isEN ? 'Print Selection' : '印刷対象指定画面')).toBeVisible();
 
     // 4. Input Department "1" (地域支援部)
     await page.getByTestId('retro-print-dept-no').selectOption('1');
@@ -304,27 +306,28 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('retro-print-btn-print').click();
 
     // 6. Verify preview shows the correct filtered members
-    // 田中 太郎 (Department: 地域支援部) should be visible, 佐藤 花子 (Department: 介護福祉部) should not be visible.
     await expect(page.locator('table tbody tr').filter({ hasText: '田中 太郎' })).toBeVisible();
     await expect(page.locator('table tbody tr').filter({ hasText: '佐藤 花子' })).not.toBeVisible();
 
-    // 7. Click "閉じる" in the print preview
-    await page.click('button:has-text("閉じる")');
-    await expect(page.getByText('印刷対象指定画面')).toBeVisible();
+    // 7. Click "閉じる" (or "Close") in the print preview
+    await page.click(`button:has-text("${isEN ? 'Close' : '閉じる'}")`);
+    await expect(page.getByText(isEN ? 'Print Selection' : '印刷対象指定画面')).toBeVisible();
 
-    // 8. Reset Dept to none, and choose Delivery Destination "22" (which maps to "12", i.e. 佐藤 花子)
+    // 8. Reset Dept to none, and choose Delivery Destination "22"
     await page.getByTestId('retro-print-dept-no').selectOption('');
     await page.getByTestId('retro-print-delivery-no').selectOption('22');
 
     // 9. Click "印刷"
     await page.getByTestId('retro-print-btn-print').click();
 
-    // 10. Verify preview shows only matching delivery destination (佐藤 花子 visible, 田中 太郎 not visible)
+    // 10. Verify preview shows only matching delivery destination
     await expect(page.locator('table tbody tr').filter({ hasText: '佐藤 花子' })).toBeVisible();
     await expect(page.locator('table tbody tr').filter({ hasText: '田中 太郎' })).not.toBeVisible();
   });
 
-  test('Retro Address Selector Filtering', async ({ page }) => {
+  test('Retro Address Selector Filtering', async ({ page, i18n }) => {
+    const isEN = i18n.__lang === 'en';
+
     // 1. Switch to retro mode using modern header toggle
     await page.getByTestId('btn-mode-toggle').click();
     await expect(page.getByTestId('win95-db-window')).toBeVisible();
@@ -333,11 +336,11 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('retro-menu-btn-1').click();
 
     // 3. Go back to member management menu from the ledger view
-    await page.locator('button.win95-custom-btn', { hasText: '戻る' }).click();
+    await page.locator('button.win95-custom-btn', { hasText: isEN ? 'Back' : '戻る' }).click();
 
-    // 4. Click "宛名印刷"
-    await page.click('button:has-text("宛名印刷")');
-    await expect(page.getByText('印刷対象指定画面')).toBeVisible();
+    // 4. Click "宛名印刷" (or "Print Address Labels")
+    await page.click(`button:has-text("${isEN ? 'Print Address Labels' : '宛名印刷'}")`);
+    await expect(page.getByText(isEN ? 'Print Selection' : '印刷対象指定画面')).toBeVisible();
 
     // 5. Input Department "1" (地域支援部)
     await page.getByTestId('retro-address-dept-no').selectOption('1');
@@ -346,22 +349,21 @@ test.describe('Demo Mode Parallel E2E Suite', () => {
     await page.getByTestId('retro-address-btn-print').click();
 
     // 7. Verify preview shows the correct filtered member address labels
-    // 田中 太郎 (Department: 地域支援部) should be visible, 佐藤 花子 (Department: 介護福祉部) should not be visible.
     await expect(page.locator('.retro-body').filter({ hasText: '田中 太郎' })).toBeVisible();
     await expect(page.locator('.retro-body').filter({ hasText: '佐藤 花子' })).not.toBeVisible();
 
-    // 8. Click "閉じる" in the print preview using evaluate to bypass taskbar overlap
+    // 8. Click "閉じる" (or "Close") in the print preview using evaluate to bypass taskbar overlap
     await page.getByTestId('retro-address-btn-close').evaluate(el => el.click());
-    await expect(page.getByText('印刷対象指定画面')).toBeVisible();
+    await expect(page.getByText(isEN ? 'Print Selection' : '印刷対象指定画面')).toBeVisible();
 
-    // 9. Reset Dept to none, and choose Delivery Destination "22" (which maps to "12", i.e. 佐藤 花子)
+    // 9. Reset Dept to none, and choose Delivery Destination "22"
     await page.getByTestId('retro-address-dept-no').selectOption('');
     await page.getByTestId('retro-address-delivery-no').selectOption('22');
 
     // 10. Click "印刷"
     await page.getByTestId('retro-address-btn-print').click();
 
-    // 11. Verify preview shows only matching delivery destination (佐藤 花子 visible, 田中 太郎 not visible)
+    // 11. Verify preview shows only matching delivery destination
     await expect(page.locator('.retro-body').filter({ hasText: '佐藤 花子' })).toBeVisible();
     await expect(page.locator('.retro-body').filter({ hasText: '田中 太郎' })).not.toBeVisible();
   });

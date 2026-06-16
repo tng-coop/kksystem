@@ -85,6 +85,8 @@ function RetroWin95Mock({
     }
   };
 
+  const rt = (jaStr: string, enStr: string) => lang === 'ja' ? jaStr : enStr;
+
   const [recordIdx, setRecordIdx] = useState(0);
   const records = dbMembers && dbMembers.length > 0 ? dbMembers : [];
   const totalRecords = records.length;
@@ -265,7 +267,7 @@ function RetroWin95Mock({
     }
 
     const eraStr = `${eraChar}${String(eraYear).padStart(2, '0')}-${month}-${day}`;
-    const yearStr = `(${year}年)`;
+    const yearStr = lang === 'ja' ? `(${year}年)` : `(${year})`;
 
     // Calculate age as of 2026-06-16
     const today = new Date(2026, 5, 16);
@@ -274,7 +276,7 @@ function RetroWin95Mock({
     if (m < 0 || (m === 0 && today.getDate() < dateObj.getDate())) {
       age--;
     }
-    const ageStr = `${age}才`;
+    const ageStr = lang === 'ja' ? `${age}才` : `${age} yrs`;
 
     return { eraStr, yearStr, ageStr };
   };
@@ -311,6 +313,7 @@ function RetroWin95Mock({
 
   // Main menu rendering
   if (!menuIndex) {
+    const unissuedCount = 777 - (dbMembers || []).filter(m => m.cert_issued).length;
     return (
       <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
         {showMacroError && (
@@ -321,21 +324,21 @@ function RetroWin95Mock({
             fontFamily: "'MS UI Gothic', sans-serif", color: '#000', boxSizing: 'border-box'
           }}>
             <div style={{ background: '#000080', color: '#fff', padding: '3px 6px', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>マクロのシングル ステップ</span>
+              <span>{rt('マクロのシングル ステップ', 'Macro Single Step')}</span>
               <span style={{ cursor: 'pointer', fontSize: '13px' }} onClick={() => setShowMacroError(false)}>×</span>
             </div>
             <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '11px', textAlign: 'left' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div><strong>マクロ名:</strong> AutoExec</div>
-                <div><strong>条件:</strong> True</div>
-                <div><strong>アクション名:</strong> プロシージャの実行</div>
-                <div><strong>引数:</strong> get_1_kuti()</div>
-                <div><strong>エラー番号(N):</strong> 2439</div>
+                <div><strong>{rt('マクロ名:', 'Macro Name:')}</strong> AutoExec</div>
+                <div><strong>{rt('条件:', 'Condition:')}</strong> True</div>
+                <div><strong>{rt('アクション名:', 'Action Name:')}</strong> {rt('プロシージャの実行', 'RunProcedure')}</div>
+                <div><strong>{rt('引数:', 'Arguments:')}</strong> get_1_kuti()</div>
+                <div><strong>{rt('エラー番号(N):', 'Error Number(N):')}</strong> 2439</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '130px' }}>
-                <button disabled className="retro-btn" style={{ fontSize: '11px', padding: '2px 4px', opacity: 0.6, cursor: 'default' }}>ステップ(S)</button>
-                <button className="retro-btn" onClick={() => setShowMacroError(false)} style={{ fontSize: '11px', padding: '2px 4px', fontWeight: 'bold' }}>すべてのマクロを停止(T)</button>
-                <button disabled className="retro-btn" style={{ fontSize: '11px', padding: '2px 4px', opacity: 0.6, cursor: 'default' }}>続行(C)</button>
+                <button disabled className="retro-btn" style={{ fontSize: '11px', padding: '2px 4px', opacity: 0.6, cursor: 'default' }}>{rt('ステップ(S)', 'Step(S)')}</button>
+                <button className="retro-btn" onClick={() => setShowMacroError(false)} style={{ fontSize: '11px', padding: '2px 4px', fontWeight: 'bold' }}>{rt('すべてのマクロを停止(T)', 'Halt(T)')}</button>
+                <button disabled className="retro-btn" style={{ fontSize: '11px', padding: '2px 4px', opacity: 0.6, cursor: 'default' }}>{rt('続行(C)', 'Continue(C)')}</button>
               </div>
             </div>
           </div>
@@ -343,7 +346,7 @@ function RetroWin95Mock({
 
         <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px' }}>
           <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-            メインメニュー (Main Menu)
+            {rt('メインメニュー (Main Menu)', 'Main Menu')}
           </div>
           <div className="retro-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginTop: '8px' }}>
             {mainMenuButtons.map((btn) => (
@@ -360,9 +363,9 @@ function RetroWin95Mock({
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', borderTop: '2px solid #808080', paddingTop: '8px', fontSize: '11px', color: '#000' }}>
-            <div>出資証書未発行 775件</div>
+            <div>{rt(`出資証書未発行 ${unissuedCount}件`, `Unissued Certs: ${unissuedCount}`)}</div>
             <div style={{ display: 'flex', gap: '4px' }}>
-              <button className="retro-btn" onClick={() => setShowPresidentModal(true)} style={{ fontSize: '11px', padding: '2px 6px' }}>理事長追加</button>
+              <button className="retro-btn" onClick={() => setShowPresidentModal(true)} style={{ fontSize: '11px', padding: '2px 6px' }}>{rt('理事長追加', 'Chairman')}</button>
               <button className="retro-btn" onClick={() => {
                 if (showConfirm) {
                   showConfirm(
@@ -376,7 +379,7 @@ function RetroWin95Mock({
                     if (_setAppMode) _setAppMode('modern');
                   }
                 }
-              }} style={{ fontSize: '11px', padding: '2px 6px' }}>終 了</button>
+              }} style={{ fontSize: '11px', padding: '2px 6px' }}>{rt('終 了', 'Exit')}</button>
             </div>
           </div>
         </div>
@@ -389,39 +392,39 @@ function RetroWin95Mock({
             fontFamily: "'MS UI Gothic', sans-serif", color: '#000'
           }}>
             <div style={{ background: '#000080', color: '#fff', padding: '3px 6px', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>支部長・理事長一覧</span>
+              <span>{rt('支部長・理事長一覧', 'Branch / Chairman List')}</span>
               <span style={{ cursor: 'pointer', fontSize: '13px' }} onClick={() => setShowPresidentModal(false)}>×</span>
             </div>
             <div style={{ marginTop: '8px', maxHeight: '180px', overflowY: 'auto', background: '#fff', border: '1px solid #808080', textAlign: 'left' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', color: '#000' }}>
                 <thead>
                   <tr style={{ background: '#d4d0c8' }}>
-                    <th style={{ border: '1px solid #808080', padding: '3px' }}>理事長名</th>
-                    <th style={{ border: '1px solid #808080', padding: '3px' }}>就任年月日</th>
+                    <th style={{ border: '1px solid #808080', padding: '3px' }}>{rt('理事長名', 'Chairman Name')}</th>
+                    <th style={{ border: '1px solid #808080', padding: '3px' }}>{rt('就任年月日', 'Inauguration Date')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td style={{ border: '1px solid #808080', padding: '3px' }}>河田 栄二</td>
+                    <td style={{ border: '1px solid #808080', padding: '3px' }}>{rt('河田 栄二', 'Eiji Kawada')}</td>
                     <td style={{ border: '1px solid #808080', padding: '3px' }}>2010/04/01</td>
                   </tr>
                   <tr>
-                    <td style={{ border: '1px solid #808080', padding: '3px' }}>{chairmanName || '湯河原 太郎'}</td>
+                    <td style={{ border: '1px solid #808080', padding: '3px' }}>{chairmanName || rt('湯河原 太郎', 'Taro Yugawara')}</td>
                     <td style={{ border: '1px solid #808080', padding: '3px' }}>2020/04/01</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <div style={{ marginTop: '8px', display: 'flex', gap: '4px', alignItems: 'center' }}>
-              <input type="text" id="new-pres-name" placeholder="新理事長名" style={{ fontSize: '11px', flex: 1, padding: '2px' }} />
+              <input type="text" id="new-pres-name" placeholder={rt('新理事長名', 'New Chairman Name')} style={{ fontSize: '11px', flex: 1, padding: '2px' }} />
               <button className="retro-btn" onClick={() => {
                 const input = document.getElementById('new-pres-name') as HTMLInputElement;
                 if (input && input.value.trim()) {
                   if (onSaveChairman) onSaveChairman(input.value.trim());
                   input.value = '';
                 }
-              }} style={{ fontSize: '11px', padding: '2px 6px' }}>追加</button>
-              <button className="retro-btn" onClick={() => setShowPresidentModal(false)} style={{ fontSize: '11px', padding: '2px 6px' }}>閉じる</button>
+              }} style={{ fontSize: '11px', padding: '2px 6px' }}>{rt('追加', 'Add')}</button>
+              <button className="retro-btn" onClick={() => setShowPresidentModal(false)} style={{ fontSize: '11px', padding: '2px 6px' }}>{rt('閉じる', 'Close')}</button>
             </div>
           </div>
         )}
@@ -436,10 +439,10 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px' }}>
             <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              会員管理メニュー
+              {rt('会員管理メニュー', 'Member Management Menu')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
-              <button className="retro-btn" onClick={() => setSubView('ledger')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>会員データ</button>
+              <button className="retro-btn" onClick={() => setSubView('ledger')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('会員データ', 'Member Data')}</button>
               <button className="retro-btn" onClick={() => {
                 setSubView('list-selector');
                 setSelectorFromNo('');
@@ -447,8 +450,8 @@ function RetroWin95Mock({
                 setSelectorKanaName('');
                 setSelectorDeptNo('');
                 setSelectorDeliveryNo('');
-              }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>組合員一覧印刷</button>
-              <button className="retro-btn" onClick={() => { setSubView('ledger'); setRecordIdx(records.length); }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>会員新規入力</button>
+              }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('組合員一覧印刷', 'Print Member List')}</button>
+              <button className="retro-btn" onClick={() => { setSubView('ledger'); setRecordIdx(records.length); }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('会員新規入力', 'New Member Input')}</button>
               <button className="retro-btn" onClick={() => {
                 setSubView('address-selector');
                 setAddressFromNo('');
@@ -456,11 +459,11 @@ function RetroWin95Mock({
                 setAddressKanaName('');
                 setAddressDeptNo('');
                 setAddressDeliveryNo('');
-              }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>宛名印刷</button>
+              }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('宛名印刷', 'Print Address Labels')}</button>
               <button className="retro-btn" onClick={() => {
                 const m = records[recordIdx] || records[0];
                 if (m) onPrintCertificate(m, dbContributions ? dbContributions.filter(c => c.member_id === m.id) : []);
-              }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>組合員データシート印刷</button>
+              }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('組合員データシート印刷', 'Print Member Datasheet')}</button>
               <button className="retro-btn" onClick={() => {
                 setSubView('withdrawer-selector');
                 setWithdrawerFromNo('');
@@ -469,8 +472,8 @@ function RetroWin95Mock({
                 setWithdrawerDistrict('');
                 setWithdrawerQuitFrom('');
                 setWithdrawerQuitTo('');
-              }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>退団者一覧印刷</button>
-              <button className="retro-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0', marginTop: '10px' }}>戻る</button>
+              }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('退団者一覧印刷', 'Print Withdrawn List')}</button>
+              <button className="retro-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0', marginTop: '10px' }}>{rt('戻る', 'Back')}</button>
             </div>
           </div>
         </div>
@@ -482,32 +485,32 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px', fontSize: '12px', color: '#000' }}>
             <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontWeight: 'bold' }}>
-              印刷対象指定画面
+              {rt('印刷対象指定画面', 'Print Selection')}
             </div>
             <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left', padding: '6px' }}>
               <div style={{ color: '#ff0000', fontWeight: 'bold', textAlign: 'center', fontSize: '13px', marginBottom: '8px' }}>
-                印刷対象者を指定してください
+                {rt('印刷対象者を指定してください', 'Please specify target for printing')}
               </div>
               
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', color: '#000' }}>
                 <tbody>
                   <tr>
-                    <td style={{ width: '85px', padding: '4px 0', textAlign: 'left' }}>組合員NO</td>
+                    <td style={{ width: '85px', padding: '4px 0', textAlign: 'left' }}>{rt('組合員NO', 'Member NO')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <input data-testid="retro-print-from-no" type="text" className="win95-custom-input" value={selectorFromNo} onChange={e => setSelectorFromNo(e.target.value)} style={{ width: '65px', height: '20px' }} />
-                      <span style={{ margin: '0 6px' }}>から</span>
+                      <span style={{ margin: '0 6px' }}>{rt('から', 'From')}</span>
                       <input data-testid="retro-print-to-no" type="text" className="win95-custom-input" value={selectorToNo} onChange={e => setSelectorToNo(e.target.value)} style={{ width: '65px', height: '20px' }} />
-                      <span style={{ margin: '0 6px' }}>まで</span>
+                      <span style={{ margin: '0 6px' }}>{rt('まで', 'To')}</span>
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>かな氏名</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('かな氏名', 'Kana Name')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <input data-testid="retro-print-kana-name" type="text" className="win95-custom-input" value={selectorKanaName} onChange={e => setSelectorKanaName(e.target.value)} style={{ width: '150px', height: '20px' }} />
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>所属ＮＯ</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('所属ＮＯ', 'Dept NO')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <select data-testid="retro-print-dept-no" className="win95-custom-select" value={selectorDeptNo} onChange={e => setSelectorDeptNo(e.target.value)} style={{ width: '100px', height: '20px' }}>
                         <option value=""></option>
@@ -518,7 +521,7 @@ function RetroWin95Mock({
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>送付先ＮＯ</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('送付先ＮＯ', 'Delivery NO')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <select data-testid="retro-print-delivery-no" className="win95-custom-select" value={selectorDeliveryNo} onChange={e => setSelectorDeliveryNo(e.target.value)} style={{ width: '100px', height: '20px' }}>
                         <option value=""></option>
@@ -533,8 +536,8 @@ function RetroWin95Mock({
               </table>
 
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px' }}>
-                <button data-testid="retro-print-btn-print" className="retro-btn" onClick={() => setSubView('list-preview')} style={{ padding: '4px 20px', fontWeight: 'bold' }}>印刷</button>
-                <button data-testid="retro-print-btn-back" className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '4px 20px' }}>戻る</button>
+                <button data-testid="retro-print-btn-print" className="retro-btn" onClick={() => setSubView('list-preview')} style={{ padding: '4px 20px', fontWeight: 'bold' }}>{rt('印刷', 'Print')}</button>
+                <button data-testid="retro-print-btn-back" className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '4px 20px' }}>{rt('戻る', 'Back')}</button>
               </div>
             </div>
           </div>
@@ -590,14 +593,14 @@ function RetroWin95Mock({
 
       const getCreatedDateStr = () => {
         const d = new Date();
-        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} 作成`;
+        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${rt('作成', 'Created')}`;
       };
 
       return (
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#fff', color: '#000', padding: '15px', height: '580px', overflowY: 'auto', fontFamily: "'MS UI Gothic', sans-serif", textAlign: 'left' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #000', paddingBottom: '4px', marginBottom: '10px', width: '860px', margin: '0 auto' }}>
-              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>◆ 組 合 員 一 覧 ◆</span>
+              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>{rt('◆ 組 合 員 一 覧 ◆', '◆ Member List ◆')}</span>
               <span style={{ fontSize: '11px' }}>{getCreatedDateStr()} &nbsp;&nbsp;&nbsp;&nbsp; Page 1</span>
             </div>
             
@@ -605,22 +608,22 @@ function RetroWin95Mock({
               <thead style={{ display: 'block' }}>
                 <tr style={{ display: 'block', position: 'relative', width: '100%', borderBottom: '1px solid #000', height: '36px', fontSize: '10px', fontWeight: 'bold', margin: '5px 0 10px 0' }}>
                   {/* Row 1 Headers */}
-                  <th style={{ display: 'block', position: 'absolute', left: '0px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>組合員NO</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '80px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>氏 名</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '190px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>かな</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '320px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>郵便番号 &nbsp;&nbsp; 住 所 1</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '600px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>住 所 2</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '760px', bottom: '18px', width: '100px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>電 話</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '0px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('組合員NO', 'Member NO')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '80px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('氏 名', 'Name')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '190px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('かな', 'Kana')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '320px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('郵便番号 &nbsp;&nbsp; 住 所 1', 'Zip &nbsp;&nbsp; Address 1')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '600px', bottom: '18px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('住 所 2', 'Address 2')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '760px', bottom: '18px', width: '100px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('電 話', 'Phone')}</th>
 
                   {/* Row 2 Headers */}
-                  <th style={{ display: 'block', position: 'absolute', left: '80px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>所属ＮＯ</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '140px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>所属名</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '320px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>生年月日</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '430px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>年齢</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '485px', bottom: '2px', width: '65px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>出資金</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '560px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>加入日</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '650px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>脱退日</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '760px', bottom: '2px', width: '100px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>更新日</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '80px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('所属ＮＯ', 'Dept NO')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '140px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('所属名', 'Dept Name')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '320px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('生年月日', 'Birthdate')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '430px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('年齢', 'Age')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '485px', bottom: '2px', width: '65px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('出資金', 'Capital')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '560px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('加入日', 'Join Date')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '650px', bottom: '2px', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('脱退日', 'Quit Date')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '760px', bottom: '2px', width: '100px', textAlign: 'right', borderBottom: '1px solid #000', paddingBottom: '1px', fontWeight: 'bold' }}>{rt('更新日', 'Update Date')}</th>
                 </tr>
               </thead>
 
@@ -628,16 +631,16 @@ function RetroWin95Mock({
                 {filtered.map(m => {
                   const mContribs = dbContributions ? dbContributions.filter(c => c.member_id === m.id) : [];
                   const totalAmount = mContribs.reduce((sum, c) => sum + Number(c.amount), 0);
-                  const formattedCapital = new Intl.NumberFormat('ja-JP').format(totalAmount) + '円';
+                  const formattedCapital = new Intl.NumberFormat('ja-JP').format(totalAmount) + rt('円', ' Yen');
                   
-                  const dobFormatted = m.dob ? m.dob.replace(/-/g, '/') + '生' : '';
+                  const dobFormatted = m.dob ? m.dob.replace(/-/g, '/') + rt('生', '') : '';
                   const { ageStr } = parseDob(m.dob);
 
                   let deptNo = '';
                   let deptName = '';
-                  if (m.department === '地域支援部') { deptNo = '1'; deptName = '職員・ヘルパー'; }
-                  else if (m.department === '介護福祉部') { deptNo = '2'; deptName = '一般組合員'; }
-                  else if (m.department === '総務管理部') { deptNo = '3'; deptName = '総務管理部'; }
+                  if (m.department === '地域支援部') { deptNo = '1'; deptName = rt('職員・ヘルパー', 'Staff / Helper'); }
+                  else if (m.department === '介護福祉部') { deptNo = '2'; deptName = rt('一般組合員', 'Regular Member'); }
+                  else if (m.department === '総務管理部') { deptNo = '3'; deptName = rt('総務管理部', 'General Admin'); }
 
                   const updateDateFormatted = formatUpdateDate(m.created_at || m.join_date);
 
@@ -669,11 +672,11 @@ function RetroWin95Mock({
             </table>
 
             {filtered.length === 0 && (
-              <div style={{ fontSize: '13px', color: '#888', marginTop: '50px', textAlign: 'center' }}>該当する組合員データはありません。</div>
+              <div style={{ fontSize: '13px', color: '#888', marginTop: '50px', textAlign: 'center' }}>{rt('該当する組合員データはありません。', 'No matching member data found.')}</div>
             )}
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', width: '860px', margin: '20px auto 0 auto', borderTop: '1px solid #000', paddingTop: '10px' }}>
-              <button className="retro-btn" onClick={() => setSubView('list-selector')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>閉じる</button>
+              <button className="retro-btn" onClick={() => setSubView('list-selector')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>{rt('閉じる', 'Close')}</button>
             </div>
           </div>
         </div>
@@ -685,32 +688,32 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px', fontSize: '12px', color: '#000' }}>
             <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontWeight: 'bold' }}>
-              印刷対象指定画面
+              {rt('印刷対象指定画面', 'Print Selection')}
             </div>
             <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left', padding: '6px' }}>
               <div style={{ color: '#ff0000', fontWeight: 'bold', textAlign: 'center', fontSize: '13px', marginBottom: '8px' }}>
-                印刷対象者を指定してください
+                {rt('印刷対象者を指定してください', 'Please specify target for printing')}
               </div>
               
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', color: '#000' }}>
                 <tbody>
                   <tr>
-                    <td style={{ width: '85px', padding: '4px 0', textAlign: 'left' }}>組合員NO</td>
+                    <td style={{ width: '85px', padding: '4px 0', textAlign: 'left' }}>{rt('組合員NO', 'Member NO')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <input data-testid="retro-address-from-no" type="text" className="win95-custom-input" value={addressFromNo} onChange={e => setAddressFromNo(e.target.value)} style={{ width: '65px', height: '20px' }} />
-                      <span style={{ margin: '0 6px' }}>から</span>
+                      <span style={{ margin: '0 6px' }}>{rt('から', 'From')}</span>
                       <input data-testid="retro-address-to-no" type="text" className="win95-custom-input" value={addressToNo} onChange={e => setAddressToNo(e.target.value)} style={{ width: '65px', height: '20px' }} />
-                      <span style={{ margin: '0 6px' }}>まで</span>
+                      <span style={{ margin: '0 6px' }}>{rt('まで', 'To')}</span>
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>かな氏名</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('かな氏名', 'Kana Name')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <input data-testid="retro-address-kana-name" type="text" className="win95-custom-input" value={addressKanaName} onChange={e => setAddressKanaName(e.target.value)} style={{ width: '150px', height: '20px' }} />
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>所属ＮＯ</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('所属ＮＯ', 'Dept NO')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <select data-testid="retro-address-dept-no" className="win95-custom-select" value={addressDeptNo} onChange={e => setAddressDeptNo(e.target.value)} style={{ width: '100px', height: '20px' }}>
                         <option value=""></option>
@@ -721,7 +724,7 @@ function RetroWin95Mock({
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>送付先ＮＯ</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('送付先ＮＯ', 'Delivery NO')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <select data-testid="retro-address-delivery-no" className="win95-custom-select" value={addressDeliveryNo} onChange={e => setAddressDeliveryNo(e.target.value)} style={{ width: '100px', height: '20px' }}>
                         <option value=""></option>
@@ -736,8 +739,8 @@ function RetroWin95Mock({
               </table>
 
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px' }}>
-                <button data-testid="retro-address-btn-print" className="retro-btn" onClick={() => setSubView('address-preview')} style={{ padding: '4px 20px', fontWeight: 'bold' }}>印刷</button>
-                <button data-testid="retro-address-btn-back" className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '4px 20px' }}>戻る</button>
+                <button data-testid="retro-address-btn-print" className="retro-btn" onClick={() => setSubView('address-preview')} style={{ padding: '4px 20px', fontWeight: 'bold' }}>{rt('印刷', 'Print')}</button>
+                <button data-testid="retro-address-btn-back" className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '4px 20px' }}>{rt('戻る', 'Back')}</button>
               </div>
             </div>
           </div>
@@ -786,7 +789,7 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#fff', color: '#000', padding: '15px', height: '580px', overflowY: 'auto', fontFamily: "'MS UI Gothic', sans-serif", textAlign: 'left' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #000', paddingBottom: '4px', marginBottom: '15px', width: '420px', margin: '0 auto' }}>
-              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>宛名（個人）</span>
+              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>{rt('宛名（個人）', 'Address Labels (Individual)')}</span>
               <span style={{ fontSize: '11px' }}>Page 1</span>
             </div>
 
@@ -797,20 +800,20 @@ function RetroWin95Mock({
                   <div style={{ fontSize: '14px', paddingLeft: '15px' }}>{m.address || '神奈川県足柄下郡架空町'}</div>
                   {m.address2 && <div style={{ fontSize: '12px', paddingLeft: '15px' }}>{m.address2}</div>}
                   <div style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center', margin: '15px 0' }}>
-                    {m.name || '-'} 様 &nbsp;({m.id})
+                    {m.name || '-'}{rt(' 様', '')} &nbsp;({m.id})
                   </div>
                   <div style={{ fontSize: '10px', alignSelf: 'flex-end', borderTop: '1px solid #eee', paddingTop: '6px', width: '100%', textAlign: 'right', color: '#666' }}>
-                    差出人: TNG Co-op 出資金管理システム
+                    {rt('差出人: TNG Co-op 出資金管理システム', 'Sender: TNG Co-op Capital Management System')}
                   </div>
                 </div>
               ))}
               {filtered.length === 0 && (
-                <div style={{ fontSize: '13px', color: '#888', marginTop: '50px' }}>該当する宛名データはありません。</div>
+                <div style={{ fontSize: '13px', color: '#888', marginTop: '50px' }}>{rt('該当する宛名データはありません。', 'No matching address data found.')}</div>
               )}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', width: '420px', margin: '20px auto 0 auto', borderTop: '1px solid #000', paddingTop: '10px' }}>
-              <button data-testid="retro-address-btn-close" className="retro-btn" onClick={() => setSubView('address-selector')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>閉じる</button>
+              <button data-testid="retro-address-btn-close" className="retro-btn" onClick={() => setSubView('address-selector')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>{rt('閉じる', 'Close')}</button>
             </div>
           </div>
         </div>
@@ -822,42 +825,42 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px', fontSize: '12px', color: '#000' }}>
             <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontWeight: 'bold' }}>
-              退団者検索
+              {rt('退団者検索', 'Search Withdrawn Members')}
             </div>
             <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left', padding: '6px' }}>
               <div style={{ color: '#ff0000', fontWeight: 'bold', textAlign: 'center', fontSize: '13px', marginBottom: '8px' }}>
-                検索条件を指定してください
+                {rt('検索条件を指定してください', 'Please specify search conditions')}
               </div>
               
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', color: '#000' }}>
                 <tbody>
                   <tr>
-                    <td style={{ width: '80px', padding: '4px 0', textAlign: 'left' }}>組合員NO</td>
+                    <td style={{ width: '80px', padding: '4px 0', textAlign: 'left' }}>{rt('組合員NO', 'Member NO')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <input type="text" className="win95-custom-input" value={withdrawerFromNo} onChange={e => setWithdrawerFromNo(e.target.value)} style={{ width: '65px', height: '20px' }} />
-                      <span style={{ margin: '0 6px' }}>から</span>
+                      <span style={{ margin: '0 6px' }}>{rt('から', 'From')}</span>
                       <input type="text" className="win95-custom-input" value={withdrawerToNo} onChange={e => setWithdrawerToNo(e.target.value)} style={{ width: '65px', height: '20px' }} />
-                      <span style={{ margin: '0 6px' }}>まで</span>
+                      <span style={{ margin: '0 6px' }}>{rt('まで', 'To')}</span>
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>かな氏名</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('かな氏名', 'Kana Name')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <input type="text" className="win95-custom-input" value={withdrawerKanaName} onChange={e => setWithdrawerKanaName(e.target.value)} style={{ width: '150px', height: '20px' }} />
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>地区ＮＯ</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('地区ＮＯ', 'District NO')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <select data-testid="retro-withdrawer-select-district" className="win95-custom-select" value={withdrawerDistrict} onChange={e => setWithdrawerDistrict(e.target.value)} style={{ width: '100px', height: '20px' }}>
                         <option value=""></option>
-                        <option value="城堀地区">城堀地区</option>
-                        <option value="中央地区">中央地区</option>
-                        <option value="宮下地区">宮下地区</option>
-                        <option value="土肥地区">土肥地区</option>
-                        <option value="吉浜地区">吉浜地区</option>
-                        <option value="鍛冶屋地区">鍛冶屋地区</option>
-                        <option value="宮上地区">宮上地区</option>
+                        <option value="城堀地区">{rt('城堀地区', 'Shirohori District')}</option>
+                        <option value="中央地区">{rt('中央地区', 'Chuo District')}</option>
+                        <option value="宮下地区">{rt('宮下地区', 'Miyashita District')}</option>
+                        <option value="土肥地区">{rt('土肥地区', 'Toi District')}</option>
+                        <option value="吉浜地区">{rt('吉浜地区', 'Yoshihama District')}</option>
+                        <option value="鍛冶屋地区">{rt('鍛冶屋地区', 'Kajiya District')}</option>
+                        <option value="宮上地区">{rt('宮上地区', 'Miyagami District')}</option>
                         {withdrawerDistrict && !['城堀地区', '中央地区', '宮下地区', '土肥地区', '吉浜地区', '鍛冶屋地区', '宮上地区'].includes(withdrawerDistrict) && (
                           <option value={withdrawerDistrict}>{withdrawerDistrict}</option>
                         )}
@@ -865,20 +868,20 @@ function RetroWin95Mock({
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '4px 0', textAlign: 'left' }}>脱退日</td>
+                    <td style={{ padding: '4px 0', textAlign: 'left' }}>{rt('脱退日', 'Quit Date')}</td>
                     <td style={{ padding: '4px 0', textAlign: 'left' }}>
                       <input type="text" className="win95-custom-input" value={withdrawerQuitFrom} onChange={e => setWithdrawerQuitFrom(e.target.value)} style={{ width: '65px', height: '20px' }} placeholder="YYYY-MM-DD" />
-                      <span style={{ margin: '0 6px' }}>から</span>
+                      <span style={{ margin: '0 6px' }}>{rt('から', 'From')}</span>
                       <input type="text" className="win95-custom-input" value={withdrawerQuitTo} onChange={e => setWithdrawerQuitTo(e.target.value)} style={{ width: '65px', height: '20px' }} placeholder="YYYY-MM-DD" />
-                      <span style={{ margin: '0 6px' }}>まで</span>
+                      <span style={{ margin: '0 6px' }}>{rt('まで', 'To')}</span>
                     </td>
                   </tr>
                 </tbody>
               </table>
 
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '12px' }}>
-                <button className="retro-btn" onClick={() => setSubView('withdrawer-preview')} style={{ padding: '4px 16px', fontWeight: 'bold' }}>印刷</button>
-                <button className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '4px 16px' }}>戻る</button>
+                <button className="retro-btn" onClick={() => setSubView('withdrawer-preview')} style={{ padding: '4px 16px', fontWeight: 'bold' }}>{rt('印刷', 'Print')}</button>
+                <button className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '4px 16px' }}>{rt('戻る', 'Back')}</button>
               </div>
             </div>
           </div>
@@ -916,28 +919,28 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#fff', color: '#000', padding: '15px', height: '580px', overflowY: 'auto', fontFamily: "'MS UI Gothic', sans-serif", textAlign: 'left' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #000', paddingBottom: '4px', marginBottom: '10px', width: '760px', margin: '0 auto' }}>
-              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>◆ 退団者一覧 ◆</span>
+              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>{rt('◆ 退団者一覧 ◆', '◆ Withdrawn List ◆')}</span>
               <span style={{ fontSize: '11px' }}>{getCreatedDateStr()} &nbsp;&nbsp;&nbsp;&nbsp; Page 1</span>
             </div>
             
             <table style={{ width: '760px', margin: '0 auto', display: 'block', color: '#000', borderCollapse: 'collapse', textAlign: 'left', borderBottom: '1px solid #000' }}>
               <thead style={{ display: 'block' }}>
                 <tr style={{ display: 'block', position: 'relative', width: '100%', borderBottom: '1px solid #000', height: '20px', fontSize: '10px', fontWeight: 'bold', margin: '5px 0' }}>
-                  <th style={{ display: 'block', position: 'absolute', left: '0px', bottom: '2px', width: '70px', textAlign: 'right', fontWeight: 'bold' }}>組合員NO</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '80px', bottom: '2px', fontWeight: 'bold' }}>氏 名</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '190px', bottom: '2px', fontWeight: 'bold' }}>かな</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '300px', bottom: '2px', width: '40px', textAlign: 'right', fontWeight: 'bold' }}>年齢</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '350px', bottom: '2px', fontWeight: 'bold' }}>地 区</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '450px', bottom: '2px', width: '85px', textAlign: 'right', fontWeight: 'bold' }}>加入年月日</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '550px', bottom: '2px', width: '80px', textAlign: 'right', fontWeight: 'bold' }}>出資金</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '650px', bottom: '2px', width: '110px', textAlign: 'right', fontWeight: 'bold' }}>脱退年月日</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '0px', bottom: '2px', width: '70px', textAlign: 'right', fontWeight: 'bold' }}>{rt('組合員NO', 'Member NO')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '80px', bottom: '2px', fontWeight: 'bold' }}>{rt('氏 名', 'Name')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '190px', bottom: '2px', fontWeight: 'bold' }}>{rt('かな', 'Kana')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '300px', bottom: '2px', width: '40px', textAlign: 'right', fontWeight: 'bold' }}>{rt('年齢', 'Age')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '350px', bottom: '2px', fontWeight: 'bold' }}>{rt('地 区', 'District')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '450px', bottom: '2px', width: '85px', textAlign: 'right', fontWeight: 'bold' }}>{rt('加入年月日', 'Join Date')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '550px', bottom: '2px', width: '80px', textAlign: 'right', fontWeight: 'bold' }}>{rt('出資金', 'Capital')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '650px', bottom: '2px', width: '110px', textAlign: 'right', fontWeight: 'bold' }}>{rt('脱退年月日', 'Quit Date')}</th>
                 </tr>
               </thead>
               <tbody style={{ display: 'block', width: '100%' }}>
                 {withdrawnList.map(m => {
                   const mContribs = dbContributions ? dbContributions.filter(c => c.member_id === m.id) : [];
                   const totalAmount = mContribs.reduce((sum, c) => sum + Number(c.amount), 0);
-                  const formattedCapital = new Intl.NumberFormat('ja-JP').format(totalAmount) + '円';
+                  const formattedCapital = new Intl.NumberFormat('ja-JP').format(totalAmount) + rt('円', ' Yen');
                   const { ageStr } = parseDob(m.dob);
 
                   return (
@@ -956,7 +959,7 @@ function RetroWin95Mock({
                 {withdrawnList.length === 0 && (
                   <tr style={{ display: 'block', position: 'relative', height: '40px' }}>
                     <td style={{ display: 'block', position: 'absolute', left: '0px', top: '15px', width: '100%', textAlign: 'center', color: '#666', fontSize: '11px' }}>
-                      該当する退団者は存在しません。
+                      {rt('該当する退団者は存在しません。', 'No matching withdrawn members found.')}
                     </td>
                   </tr>
                 )}
@@ -964,7 +967,7 @@ function RetroWin95Mock({
             </table>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', width: '760px', margin: '20px auto 0 auto', borderTop: '1px solid #000', paddingTop: '10px' }}>
-              <button className="retro-btn" onClick={() => setSubView('withdrawer-selector')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>閉じる</button>
+              <button className="retro-btn" onClick={() => setSubView('withdrawer-selector')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>{rt('閉じる', 'Close')}</button>
             </div>
           </div>
         </div>
@@ -1036,7 +1039,7 @@ function RetroWin95Mock({
         
         <div className="retro-body" style={{ background: '#d4d0c8', padding: '4px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ background: '#000080', color: '#fff', padding: '3px', fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', userSelect: 'none' }}>
-            <span>組合員台帳入力フォーム</span>
+            <span>{rt('組合員台帳入力フォーム', 'Member Directory Ledger')}</span>
             <span style={{ fontSize: '0.7rem' }}>Access 97 Edition</span>
           </div>
 
@@ -1047,14 +1050,14 @@ function RetroWin95Mock({
             
             {/* 組合員NO */}
             <div style={{ ...labelStyle, left: '20px', top: '15px', color: '#a30000', fontWeight: 'bold' }}>
-              組合員NO
+              {rt('組合員NO', 'Member NO')}
             </div>
             <div style={{ ...labelStyle, left: '105px', top: '15px', color: '#a30000', fontWeight: 'bold', fontSize: '13px' }}>
               {activeMember.id || ''}
             </div>
 
             {/* 氏名 */}
-            <div style={{ ...labelStyle, left: '20px', top: '40px' }}>氏名</div>
+            <div style={{ ...labelStyle, left: '20px', top: '40px' }}>{rt('氏名', 'Name')}</div>
             <input
               data-testid="retro-input-name"
               className="win95-custom-input"
@@ -1065,7 +1068,7 @@ function RetroWin95Mock({
             />
 
             {/* 性別 */}
-            <div style={{ ...labelStyle, left: '235px', top: '40px' }}>性別</div>
+            <div style={{ ...labelStyle, left: '235px', top: '40px' }}>{rt('性別', 'Gender')}</div>
             <select
               data-testid="retro-select-gender"
               className="win95-custom-select"
@@ -1080,7 +1083,7 @@ function RetroWin95Mock({
             </select>
 
             {/* かな */}
-            <div style={{ ...labelStyle, left: '20px', top: '75px' }}>かな</div>
+            <div style={{ ...labelStyle, left: '20px', top: '75px' }}>{rt('かな', 'Kana')}</div>
             <input
               data-testid="retro-input-kananame"
               className="win95-custom-input"
@@ -1091,7 +1094,7 @@ function RetroWin95Mock({
             />
 
             {/* 住所 */}
-            <div style={{ ...labelStyle, left: '20px', top: '110px' }}>住所</div>
+            <div style={{ ...labelStyle, left: '20px', top: '110px' }}>{rt('住所', 'Address')}</div>
             <div style={{ ...labelStyle, left: '60px', top: '110px', fontSize: '13px' }}>〒</div>
             <input
               data-testid="retro-input-postal"
@@ -1129,7 +1132,7 @@ function RetroWin95Mock({
             />
 
             {/* 電話 */}
-            <div style={{ ...labelStyle, left: '20px', top: '180px' }}>電話</div>
+            <div style={{ ...labelStyle, left: '20px', top: '180px' }}>{rt('電話', 'Phone')}</div>
             <input
               data-testid="retro-input-phone"
               className="win95-custom-input"
@@ -1140,7 +1143,7 @@ function RetroWin95Mock({
             />
 
             {/* 学区 */}
-            <div style={{ ...labelStyle, left: '185px', top: '180px' }}>学区</div>
+            <div style={{ ...labelStyle, left: '185px', top: '180px' }}>{rt('学区', 'District')}</div>
             <select
               data-testid="retro-input-district"
               className="win95-custom-select"
@@ -1149,20 +1152,20 @@ function RetroWin95Mock({
               style={{ position: 'absolute', left: '225px', top: '180px', width: '150px', height: '20px' }}
             >
               <option value=""></option>
-              <option value="城堀地区">城堀地区</option>
-              <option value="中央地区">中央地区</option>
-              <option value="宮下地区">宮下地区</option>
-              <option value="土肥地区">土肥地区</option>
-              <option value="吉浜地区">吉浜地区</option>
-              <option value="鍛冶屋地区">鍛冶屋地区</option>
-              <option value="宮上地区">宮上地区</option>
+              <option value="城堀地区">{rt('城堀地区', 'Shirohori District')}</option>
+              <option value="中央地区">{rt('中央地区', 'Chuo District')}</option>
+              <option value="宮下地区">{rt('宮下地区', 'Miyashita District')}</option>
+              <option value="土肥地区">{rt('土肥地区', 'Toi District')}</option>
+              <option value="吉浜地区">{rt('吉浜地区', 'Yoshihama District')}</option>
+              <option value="鍛冶屋地区">{rt('鍛冶屋地区', 'Kajiya District')}</option>
+              <option value="宮上地区">{rt('宮上地区', 'Miyagami District')}</option>
               {formData.district && !['城堀地区', '中央地区', '宮下地区', '土肥地区', '吉浜地区', '鍛冶屋地区', '宮上地区'].includes(formData.district) && (
                 <option value={formData.district}>{formData.district}</option>
               )}
             </select>
 
             {/* 所属 */}
-            <div style={{ ...labelStyle, left: '20px', top: '215px' }}>所属</div>
+            <div style={{ ...labelStyle, left: '20px', top: '215px' }}>{rt('所属', 'Dept')}</div>
             <select
               data-testid="retro-select-department"
               className="win95-custom-select"
@@ -1176,14 +1179,14 @@ function RetroWin95Mock({
               <option value="総務管理部">3</option>
             </select>
             <div style={{ ...labelStyle, left: '120px', top: '217px', color: '#0000ff' }}>
-              {formData.department === '地域支援部' ? '職員・ヘルパー' : 
-               formData.department === '介護福祉部' ? '一般組合員' : 
-               formData.department === '総務管理部' ? '総務管理部' : 
-               (formData.department || '未所属')}
+              {formData.department === '地域支援部' ? rt('職員・ヘルパー', 'Staff / Helper') : 
+               formData.department === '介護福祉部' ? rt('一般組合員', 'Regular Member') : 
+               formData.department === '総務管理部' ? rt('総務管理部', 'General Admin') : 
+               (formData.department || rt('未所属', 'Unassigned'))}
             </div>
 
             {/* 送付先 */}
-            <div style={{ ...labelStyle, left: '20px', top: '250px' }}>送付先</div>
+            <div style={{ ...labelStyle, left: '20px', top: '250px' }}>{rt('送付先', 'Delivery')}</div>
             <select
               data-testid="retro-select-delivery"
               className="win95-custom-select"
@@ -1198,15 +1201,15 @@ function RetroWin95Mock({
               <option value="14">24</option>
             </select>
             <div style={{ ...labelStyle, left: '120px', top: '252px', color: '#0000ff' }}>
-              {formData.delivery === '11' ? '湯河原職員・ヘルパー' : 
-               formData.delivery === '12' ? '宅配・ヘルパー' : 
-               formData.delivery === '13' ? '事務所' : 
-               formData.delivery === '14' ? '直接' : 
+              {formData.delivery === '11' ? rt('湯河原職員・ヘルパー', 'Yugawara Staff / Helper') : 
+               formData.delivery === '12' ? rt('宅配・ヘルパー', 'Delivery / Helper') : 
+               formData.delivery === '13' ? rt('事務所', 'Office') : 
+               formData.delivery === '14' ? rt('直接', 'Direct') : 
                (formData.delivery || '')}
             </div>
 
             {/* 加入日 & 脱退日 & 死亡 */}
-            <div style={{ ...labelStyle, left: '20px', top: '285px' }}>加入日</div>
+            <div style={{ ...labelStyle, left: '20px', top: '285px' }}>{rt('加入日', 'Join Date')}</div>
             <input
               data-testid="retro-input-join_date"
               className="win95-custom-input"
@@ -1215,7 +1218,7 @@ function RetroWin95Mock({
               onChange={e => setFormData({ ...formData, join_date: e.target.value })}
               style={{ position: 'absolute', left: '60px', top: '285px', width: '80px', height: '20px' }}
             />
-            <div style={{ ...labelStyle, left: '155px', top: '285px' }}>脱退日</div>
+            <div style={{ ...labelStyle, left: '155px', top: '285px' }}>{rt('脱退日', 'Quit Date')}</div>
             <input
               data-testid="retro-input-quit_date"
               className="win95-custom-input"
@@ -1224,7 +1227,7 @@ function RetroWin95Mock({
               onChange={e => setFormData({ ...formData, quit_date: e.target.value })}
               style={{ position: 'absolute', left: '205px', top: '285px', width: '80px', height: '20px' }}
             />
-            <div style={{ ...labelStyle, left: '295px', top: '285px' }}>死亡</div>
+            <div style={{ ...labelStyle, left: '295px', top: '285px' }}>{rt('死亡', 'Deceased')}</div>
             <input
               data-testid="retro-input-is_living"
               type="checkbox"
@@ -1234,7 +1237,7 @@ function RetroWin95Mock({
             />
 
             {/* 生年月日 */}
-            <div style={{ ...labelStyle, left: '20px', top: '320px' }}>生年月日</div>
+            <div style={{ ...labelStyle, left: '20px', top: '320px' }}>{rt('生年月日', 'Birthdate')}</div>
             <input
               data-testid="retro-input-dob"
               className="win95-custom-input"
@@ -1248,7 +1251,7 @@ function RetroWin95Mock({
             </div>
 
             {/* メールアドレス (email) */}
-            <div style={{ ...labelStyle, left: '20px', top: '355px' }}>メール</div>
+            <div style={{ ...labelStyle, left: '20px', top: '355px' }}>{rt('メール', 'Email')}</div>
             <input
               data-testid="retro-input-email"
               className="win95-custom-input"
@@ -1259,7 +1262,7 @@ function RetroWin95Mock({
             />
 
             {/* 記事 */}
-            <div style={{ ...labelStyle, left: '20px', top: '390px' }}>記事</div>
+            <div style={{ ...labelStyle, left: '20px', top: '390px' }}>{rt('記事', 'Remarks')}</div>
             <textarea
               data-testid="retro-input-remarks"
               className="win95-custom-input"
@@ -1269,7 +1272,7 @@ function RetroWin95Mock({
             />
 
             {/* 希望意見 */}
-            <div style={{ ...labelStyle, left: '20px', top: '495px' }}>希望意見</div>
+            <div style={{ ...labelStyle, left: '20px', top: '495px' }}>{rt('希望意見', 'Opinion')}</div>
             <textarea
               data-testid="retro-input-hope"
               className="win95-custom-input"
@@ -1280,10 +1283,10 @@ function RetroWin95Mock({
 
             {/* 記入日 & 修正日 */}
             <div style={{ ...labelStyle, left: '45px', top: '552px', color: '#0000ff' }}>
-              記入日 {formData.join_date}
+              {rt('記入日', 'Created')} {formData.join_date}
             </div>
             <div style={{ ...labelStyle, left: '200px', top: '552px', color: '#0000ff' }}>
-              修正日 {formData.quit_date || '2013-4-3'}
+              {rt('修正日', 'Modified')} {formData.quit_date || '2013-4-3'}
             </div>
 
 
@@ -1291,10 +1294,10 @@ function RetroWin95Mock({
             
             {/* 緊急連絡先 */}
             <div style={{ ...labelStyle, left: '480px', top: '125px', fontWeight: 'bold' }}>
-              緊急連絡先
+              {rt('緊急連絡先', 'Emergency Contact')}
             </div>
 
-            <div style={{ ...labelStyle, left: '420px', top: '150px' }}>引受人</div>
+            <div style={{ ...labelStyle, left: '420px', top: '150px' }}>{rt('引受人', 'Guarantor')}</div>
             <input
               data-testid="retro-input-emergency_name"
               className="win95-custom-input"
@@ -1304,7 +1307,7 @@ function RetroWin95Mock({
               style={{ position: 'absolute', left: '480px', top: '150px', width: '150px', height: '20px' }}
             />
 
-            <div style={{ ...labelStyle, left: '420px', top: '185px' }}>郵便NO</div>
+            <div style={{ ...labelStyle, left: '420px', top: '185px' }}>{rt('郵便NO', 'Zip NO')}</div>
             <input
               data-testid="retro-input-emergency_zip"
               className="win95-custom-input"
@@ -1314,7 +1317,7 @@ function RetroWin95Mock({
               style={{ position: 'absolute', left: '480px', top: '185px', width: '75px', height: '20px' }}
             />
 
-            <div style={{ ...labelStyle, left: '420px', top: '220px' }}>住　所</div>
+            <div style={{ ...labelStyle, left: '420px', top: '220px' }}>{rt('住　所', 'Address')}</div>
             <textarea
               data-testid="retro-input-emergency_address"
               className="win95-custom-input"
@@ -1323,7 +1326,7 @@ function RetroWin95Mock({
               style={{ position: 'absolute', left: '480px', top: '220px', width: '200px', height: '60px', resize: 'none' }}
             />
 
-            <div style={{ ...labelStyle, left: '420px', top: '285px' }}>電　話</div>
+            <div style={{ ...labelStyle, left: '420px', top: '285px' }}>{rt('電　話', 'Phone')}</div>
             <input
               data-testid="retro-input-emergency_phone"
               className="win95-custom-input"
@@ -1337,7 +1340,7 @@ function RetroWin95Mock({
             {/* FINANCIAL STATS & CONTRIBUTION GRID */}
             
             {/* 出資口数 */}
-            <div style={{ ...labelStyle, left: '390px', top: '325px' }}>出資口数</div>
+            <div style={{ ...labelStyle, left: '390px', top: '325px' }}>{rt('出資口数', 'Shares')}</div>
             <input
               type="text"
               value={sharesVal}
@@ -1363,7 +1366,7 @@ function RetroWin95Mock({
             />
 
             {/* 出資金 */}
-            <div style={{ ...labelStyle, left: '510px', top: '325px' }}>出資金</div>
+            <div style={{ ...labelStyle, left: '510px', top: '325px' }}>{rt('出資金', 'Capital')}</div>
             <input
               type="text"
               value={totalCapitalVal.toLocaleString()}
@@ -1423,9 +1426,9 @@ function RetroWin95Mock({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', color: '#000', fontFamily: "'MS UI Gothic', sans-serif" }}>
                 <thead>
                   <tr style={{ background: '#d4d0c8', position: 'sticky', top: 0, zIndex: 1 }}>
-                    <th style={{ borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>出資年月日</th>
-                    <th style={{ borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>出資金額</th>
-                    <th style={{ borderBottom: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>証書発行</th>
+                    <th style={{ borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>{rt('出資年月日', 'Pay Date')}</th>
+                    <th style={{ borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>{rt('出資金額', 'Amount')}</th>
+                    <th style={{ borderBottom: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>{rt('証書発行', 'Certificate')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1433,7 +1436,7 @@ function RetroWin95Mock({
                     <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#f0f0f0' }}>
                       <td style={{ borderBottom: '1px solid #e0e0e0', borderRight: '1px solid #e0e0e0', padding: '2px', textAlign: 'center' }}>{c.pay_date.replace(/-/g, '/')}</td>
                       <td style={{ borderBottom: '1px solid #e0e0e0', borderRight: '1px solid #e0e0e0', padding: '2px', textAlign: 'right', paddingRight: '4px' }}>{Number(c.amount).toLocaleString()}</td>
-                      <td style={{ borderBottom: '1px solid #e0e0e0', padding: '2px', textAlign: 'center' }}>{(activeMember as Member).cert_issued ? '済' : ''}</td>
+                      <td style={{ borderBottom: '1px solid #e0e0e0', padding: '2px', textAlign: 'center' }}>{(activeMember as Member).cert_issued ? rt('済', 'Yes') : ''}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1446,14 +1449,14 @@ function RetroWin95Mock({
               onClick={() => onSelectNode(2)}
               style={{ position: 'absolute', left: '675px', top: '435px', width: '95px', height: '28px', fontWeight: 'bold' }}
             >
-              出資金入力
+              {rt('出資金入力', 'Enter Capital')}
             </button>
 
 
             {/* ANNUAL DUES SECTION */}
             
             <div style={{ ...labelStyle, left: '360px', top: '475px', fontWeight: 'bold' }}>
-              年会費
+              {rt('年会費', 'Annual Fee')}
             </div>
 
             <div
@@ -1478,10 +1481,10 @@ function RetroWin95Mock({
                 <thead>
                   <tr style={{ background: '#d4d0c8', textAlign: 'left' }}>
                     <th style={{ width: '20px', borderBottom: '1px solid #808080', borderRight: '1px solid #808080' }}></th>
-                    <th style={{ width: '60px', borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>年度</th>
-                    <th style={{ width: '100px', borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>入金日</th>
-                    <th style={{ width: '90px', borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>入金額</th>
-                    <th style={{ borderBottom: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>備考</th>
+                    <th style={{ width: '60px', borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>{rt('年度', 'Year')}</th>
+                    <th style={{ width: '100px', borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>{rt('入金日', 'Paid Date')}</th>
+                    <th style={{ width: '90px', borderBottom: '1px solid #808080', borderRight: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>{rt('入金額', 'Paid Amt')}</th>
+                    <th style={{ borderBottom: '1px solid #808080', padding: '1px', fontWeight: 'normal', textAlign: 'center' }}>{rt('備考', 'Notes')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1491,7 +1494,7 @@ function RetroWin95Mock({
                       <td style={{ borderBottom: '1px solid #e0e0e0', borderRight: '1px solid #e0e0e0', padding: '2px', textAlign: 'center' }}>2025</td>
                       <td style={{ borderBottom: '1px solid #e0e0e0', borderRight: '1px solid #e0e0e0', padding: '2px', textAlign: 'center' }}>2025/04/01</td>
                       <td style={{ borderBottom: '1px solid #e0e0e0', borderRight: '1px solid #e0e0e0', padding: '2px', textAlign: 'right', paddingRight: '4px' }}>¥1,000</td>
-                      <td style={{ borderBottom: '1px solid #e0e0e0', padding: '2px', textAlign: 'center' }}>領収済</td>
+                      <td style={{ borderBottom: '1px solid #e0e0e0', padding: '2px', textAlign: 'center' }}>{rt('領収済', 'Paid')}</td>
                     </tr>
                   ) : (
                     <tr>
@@ -1514,7 +1517,7 @@ function RetroWin95Mock({
               onClick={() => setRecordIdx(prev => (prev + 1) % (totalRecords + 1))}
               style={{ position: 'absolute', left: '770px', top: '15px', width: '95px', height: '32px', color: '#a30000', fontWeight: 'bold' }}
             >
-              次(f12)
+              {rt('次(f12)', 'Next(f12)')}
             </button>
 
             <button
@@ -1522,7 +1525,7 @@ function RetroWin95Mock({
               onClick={() => onSelectNode(0)}
               style={{ position: 'absolute', left: '770px', top: '55px', width: '95px', height: '32px', color: '#a30000', fontWeight: 'bold' }}
             >
-              閉(f1)
+              {rt('閉(f1)', 'Close(f1)')}
             </button>
 
             <button
@@ -1534,7 +1537,7 @@ function RetroWin95Mock({
               }}
               style={{ position: 'absolute', left: '770px', top: '105px', width: '95px', height: '32px', color: '#0000cc', fontWeight: 'bold' }}
             >
-              新規追加
+              {rt('新規追加', 'Add New')}
             </button>
 
             <button
@@ -1542,7 +1545,7 @@ function RetroWin95Mock({
               onClick={() => alert(lang === 'ja' ? 'Access の保護により、このレコードは削除できません。' : 'Protected record cannot be deleted.')}
               style={{ position: 'absolute', left: '770px', top: '145px', width: '95px', height: '32px', color: '#0000cc', fontWeight: 'bold' }}
             >
-              削除
+              {rt('削除', 'Delete')}
             </button>
 
             <button
@@ -1550,7 +1553,7 @@ function RetroWin95Mock({
               onClick={() => onPrintCertificate(activeMember as Member, activeContribs)}
               style={{ position: 'absolute', left: '770px', top: '185px', width: '95px', height: '32px', color: '#0000cc', fontWeight: 'bold' }}
             >
-              出資証書
+              {rt('出資証書', 'Certificate')}
             </button>
 
             <button
@@ -1558,7 +1561,7 @@ function RetroWin95Mock({
               onClick={() => onPrintLabels([activeMember as Member])}
               style={{ position: 'absolute', left: '770px', top: '225px', width: '95px', height: '32px', color: '#0000cc', fontWeight: 'bold' }}
             >
-              組合員証
+              {rt('組合員証', 'Member Card')}
             </button>
 
 
@@ -1583,7 +1586,7 @@ function RetroWin95Mock({
                 userSelect: 'none'
               }}
             >
-              <span style={{ color: '#000', paddingLeft: '2px' }}>レコード:</span>
+              <span style={{ color: '#000', paddingLeft: '2px' }}>{rt('レコード:', 'Record:')}</span>
               
               {/* First Record */}
               <button
@@ -1659,10 +1662,10 @@ function RetroWin95Mock({
                 *
               </button>
 
-              <span style={{ color: '#000', fontSize: '10px', marginLeft: '6px', whiteSpace: 'nowrap' }}>フィルターなし</span>
+              <span style={{ color: '#000', fontSize: '10px', marginLeft: '6px', whiteSpace: 'nowrap' }}>{rt('フィルターなし', 'No Filter')}</span>
 
               {/* Search */}
-              <span style={{ color: '#000', fontSize: '10px', marginLeft: 'auto' }}>検索</span>
+              <span style={{ color: '#000', fontSize: '10px', marginLeft: 'auto' }}>{rt('検索', 'Search')}</span>
               <input
                 type="text"
                 style={{
@@ -1697,7 +1700,7 @@ function RetroWin95Mock({
               onClick={() => setSubView('menu')}
               style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', height: '24px' }}
             >
-              戻る
+              {rt('戻る', 'Back')}
             </button>
           </div>
         </div>
@@ -1712,17 +1715,17 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px' }}>
             <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              出資金管理メニュー
+              {rt('出資金管理メニュー', 'Capital Management Menu')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
-              <button className="retro-btn" onClick={() => setSubView('input')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>出資金入力</button>
-              <button className="retro-btn" onClick={() => setSubView('list-preview')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>出資金一覧</button>
-              <button className="retro-btn" onClick={() => alert('未発行の出資証書 775件を印刷します。')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>未発行出資証書印刷</button>
-              <button className="retro-btn" onClick={() => alert('未発行出資証書の一致を確認しました。')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>未発行出資証書確認</button>
-              <button className="retro-btn" onClick={() => alert('出資証書の再発行画面を開きます。')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>出資証書再発行</button>
-              <button className="retro-btn" onClick={() => alert('過去の履歴データはありません。')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>過去データ一覧表示・印刷</button>
-              <button className="retro-btn" onClick={() => alert('入金処理の取消を完了しました。')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>入金処理取消</button>
-              <button className="retro-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0', marginTop: '10px' }}>戻る</button>
+              <button className="retro-btn" onClick={() => setSubView('input')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('出資金入力', 'Capital Entry')}</button>
+              <button className="retro-btn" onClick={() => setSubView('list-preview')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('出資金一覧', 'Capital List')}</button>
+              <button className="retro-btn" onClick={() => alert(lang === 'ja' ? '未発行の出資証書 775件を印刷します。' : 'Print 775 unissued certificates.')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('未発行出資証書印刷', 'Print Unissued Certs')}</button>
+              <button className="retro-btn" onClick={() => alert(lang === 'ja' ? '未発行出資証書の一致を確認しました。' : 'Verified consistency of unissued certificates.')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('未発行出資証書確認', 'Verify Unissued Certs')}</button>
+              <button className="retro-btn" onClick={() => alert(lang === 'ja' ? '出資証書の再発行画面を開きます。' : 'Open certificate reissue form.')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('出資証書再発行', 'Reissue Certificate')}</button>
+              <button className="retro-btn" onClick={() => alert(lang === 'ja' ? '過去の履歴データはありません。' : 'No historical data available.')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('過去データ一覧表示・印刷', 'Show/Print History')}</button>
+              <button className="retro-btn" onClick={() => alert(lang === 'ja' ? '入金処理の取消を完了しました。' : 'Canceled contribution transaction successfully.')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('入金処理取消', 'Cancel Transaction')}</button>
+              <button className="retro-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0', marginTop: '10px' }}>{rt('戻る', 'Back')}</button>
             </div>
           </div>
         </div>
@@ -1750,32 +1753,32 @@ function RetroWin95Mock({
 
       const getCreatedDateStr = () => {
         const d = new Date();
-        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} 作成`;
+        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${rt('作成', 'Created')}`;
       };
 
       const getDeptCodeAndName = (dept: string | undefined) => {
-        if (dept === '地域支援部' || dept === '職員・ヘルパー') return '1：職員・ヘルパー';
-        if (dept === '介護福祉部' || dept === '一般組合員') return '2：一般組合員';
-        if (dept === '総務管理部') return '3：総務管理部';
-        return dept ? `？：${dept}` : '-';
+        if (dept === '地域支援部' || dept === '職員・ヘルパー') return rt('1：職員・ヘルパー', '1: Staff / Helper');
+        if (dept === '介護福祉部' || dept === '一般組合員') return rt('2：一般組合員', '2: Regular Member');
+        if (dept === '総務管理部') return rt('3：総務管理部', '3: General Admin');
+        return dept ? `${rt('？：', '?: ')}${dept}` : '-';
       };
 
       return (
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#fff', color: '#000', padding: '15px', height: '580px', overflowY: 'auto', fontFamily: "'MS UI Gothic', sans-serif", textAlign: 'left' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #000', paddingBottom: '4px', marginBottom: '10px', width: '640px', margin: '0 auto' }}>
-              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>◆ 出 資 額 一 覧 ◆</span>
+              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>{rt('◆ 出 資 額 一 覧 ◆', '◆ Capital Growth List ◆')}</span>
               <span style={{ fontSize: '11px' }}>{getCreatedDateStr()} &nbsp;&nbsp;&nbsp;&nbsp; Page 1</span>
             </div>
             
             <table style={{ width: '640px', margin: '0 auto', display: 'block', color: '#000', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead style={{ display: 'block' }}>
                 <tr style={{ display: 'block', position: 'relative', width: '100%', borderBottom: '1px solid #000', height: '20px', fontSize: '10px', fontWeight: 'bold', margin: '5px 0' }}>
-                  <th style={{ display: 'block', position: 'absolute', left: '0px', bottom: '2px', width: '160px', textAlign: 'left', fontWeight: 'bold' }}>地 区</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '170px', bottom: '2px', fontWeight: 'bold' }}>氏 名</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '290px', bottom: '2px', fontWeight: 'bold' }}>かな</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '400px', bottom: '2px', width: '110px', textAlign: 'right', fontWeight: 'bold' }}>加入年月日</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '520px', bottom: '2px', width: '120px', textAlign: 'right', fontWeight: 'bold' }}>出資金額</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '0px', bottom: '2px', width: '160px', textAlign: 'left', fontWeight: 'bold' }}>{rt('地 区', 'District')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '170px', bottom: '2px', fontWeight: 'bold' }}>{rt('氏 名', 'Name')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '290px', bottom: '2px', fontWeight: 'bold' }}>{rt('かな', 'Kana')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '400px', bottom: '2px', width: '110px', textAlign: 'right', fontWeight: 'bold' }}>{rt('加入年月日', 'Join Date')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '520px', bottom: '2px', width: '120px', textAlign: 'right', fontWeight: 'bold' }}>{rt('出資金額', 'Capital Amount')}</th>
                 </tr>
               </thead>
               <tbody style={{ display: 'block', width: '100%' }}>
@@ -1785,19 +1788,19 @@ function RetroWin95Mock({
                     <td style={{ display: 'block', position: 'absolute', left: '170px', top: '2px', fontWeight: 'bold' }}>{m.name}</td>
                     <td style={{ display: 'block', position: 'absolute', left: '290px', top: '2px' }}>{m.kananame || ''}</td>
                     <td style={{ display: 'block', position: 'absolute', left: '400px', top: '2px', width: '110px', textAlign: 'right' }}>{m.join_date ? m.join_date.replace(/-/g, '/') : ''}</td>
-                    <td style={{ display: 'block', position: 'absolute', left: '520px', top: '2px', width: '120px', textAlign: 'right' }}>{m.total.toLocaleString()} 円</td>
+                    <td style={{ display: 'block', position: 'absolute', left: '520px', top: '2px', width: '120px', textAlign: 'right' }}>{m.total.toLocaleString()}{rt(' 円', ' Yen')}</td>
                   </tr>
                 ))}
                 <tr style={{ display: 'block', position: 'relative', height: '24px', fontSize: '10px', borderTop: '2px double #000', borderBottom: '2px double #000', margin: '4px 0', padding: '4px 0', fontWeight: 'bold' }}>
-                  <td style={{ display: 'block', position: 'absolute', left: '290px', top: '4px', fontWeight: 'bold' }}>総合計:</td>
-                  <td style={{ display: 'block', position: 'absolute', left: '520px', top: '4px', width: '120px', textAlign: 'right', fontWeight: 'bold' }}>{grandTotal.toLocaleString()} 円</td>
+                  <td style={{ display: 'block', position: 'absolute', left: '290px', top: '4px', fontWeight: 'bold' }}>{rt('総合計:', 'Total:')}</td>
+                  <td style={{ display: 'block', position: 'absolute', left: '520px', top: '4px', width: '120px', textAlign: 'right', fontWeight: 'bold' }}>{grandTotal.toLocaleString()}{rt(' 円', ' Yen')}</td>
                   <td style={{ display: 'block', position: 'absolute', left: '640px', top: '4px', width: '0px' }}></td>
                 </tr>
               </tbody>
             </table>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', width: '640px', margin: '20px auto 0 auto', borderTop: '1px solid #000', paddingTop: '10px' }}>
-              <button className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>閉じる</button>
+              <button className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>{rt('閉じる', 'Close')}</button>
             </div>
           </div>
         </div>
@@ -1840,7 +1843,7 @@ function RetroWin95Mock({
 
           <form onSubmit={handleAddContribClick} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>組合員選択</label>
+              <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('組合員選択', 'Select Member')}</label>
               <select
                 data-testid="select-contrib-member"
                 value={selectedContribMemberId}
@@ -1854,7 +1857,7 @@ function RetroWin95Mock({
 
             <div style={{ display: 'flex', gap: '6px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '50%' }}>
-                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>金額 (Amount)</label>
+                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('金額 (Amount)', 'Amount')}</label>
                 <input
                   data-testid="input-contrib-amount"
                   type="number"
@@ -1865,7 +1868,7 @@ function RetroWin95Mock({
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '50%' }}>
-                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>日付 (Date)</label>
+                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('日付 (Date)', 'Date')}</label>
                 <input
                   data-testid="input-contrib-date"
                   type="date"
@@ -1877,7 +1880,7 @@ function RetroWin95Mock({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>備考 (Notes)</label>
+              <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('備考 (Notes)', 'Notes')}</label>
               <input
                 data-testid="input-contrib-notes"
                 type="text"
@@ -1899,14 +1902,14 @@ function RetroWin95Mock({
 
           {selectedContribMemberId && (
             <div style={{ marginTop: '4px' }}>
-              <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#000', marginBottom: '2px' }}>出金・入金履歴 (History)</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#000', marginBottom: '2px' }}>{rt('出金・入金履歴 (History)', 'History')}</div>
               <div style={{ maxHeight: '80px', overflowY: 'auto', background: '#fff', border: '1px solid #808080' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', color: '#000' }}>
                   <thead>
                     <tr style={{ background: '#c0c0c0', textAlign: 'left' }}>
-                      <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>日付</th>
-                      <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>金額</th>
-                      <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>備考</th>
+                      <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>{rt('日付', 'Date')}</th>
+                      <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>{rt('金額', 'Amount')}</th>
+                      <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>{rt('備考', 'Notes')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1919,7 +1922,7 @@ function RetroWin95Mock({
                     ))}
                     {memberContribs.length === 0 && (
                       <tr>
-                        <td colSpan={3} style={{ padding: '4px', textAlign: 'center', fontStyle: 'italic', color: '#666' }}>履歴がありません</td>
+                        <td colSpan={3} style={{ padding: '4px', textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{rt('履歴がありません', 'No history')}</td>
                       </tr>
                     )}
                   </tbody>
@@ -1928,7 +1931,7 @@ function RetroWin95Mock({
             </div>
           )}
 
-          <button className="retro-back-btn" onClick={() => setSubView('menu')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', alignSelf: 'center', marginTop: '4px' }}>戻る</button>
+          <button className="retro-back-btn" onClick={() => setSubView('menu')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', alignSelf: 'center', marginTop: '4px' }}>{rt('戻る', 'Back')}</button>
         </div>
       </div>
     );
@@ -1948,9 +1951,9 @@ function RetroWin95Mock({
               <thead>
                 <tr style={{ background: '#c0c0c0', position: 'sticky', top: 0 }}>
                   <th style={{ border: '1px solid #808080', padding: '2px' }}>ID</th>
-                  <th style={{ border: '1px solid #808080', padding: '2px' }}>氏名</th>
-                  <th style={{ border: '1px solid #808080', padding: '2px' }}>支払状況</th>
-                  <th style={{ border: '1px solid #808080', padding: '2px' }}>操作</th>
+                  <th style={{ border: '1px solid #808080', padding: '2px' }}>{rt('氏名', 'Name')}</th>
+                  <th style={{ border: '1px solid #808080', padding: '2px' }}>{rt('支払状況', 'Status')}</th>
+                  <th style={{ border: '1px solid #808080', padding: '2px' }}>{rt('操作', 'Action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1976,7 +1979,7 @@ function RetroWin95Mock({
                         onClick={() => onToggleFeeStatus(m)}
                         style={{ fontSize: '0.65rem', padding: '1px 4px' }}
                       >
-                        切替
+                        {rt('切替', 'Toggle')}
                       </button>
                     </td>
                   </tr>
@@ -1985,7 +1988,7 @@ function RetroWin95Mock({
             </table>
           </div>
 
-          <button className="retro-back-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', alignSelf: 'center' }}>戻る</button>
+          <button className="retro-back-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', alignSelf: 'center' }}>{rt('戻る', 'Back')}</button>
         </div>
       </div>
     );
@@ -2005,7 +2008,7 @@ function RetroWin95Mock({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>組合員選択</label>
+            <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('組合員選択', 'Select Member')}</label>
             <select
               value={reportMemberId}
               onChange={e => setReportMemberId(e.target.value ? Number(e.target.value) : '')}
@@ -2018,21 +2021,21 @@ function RetroWin95Mock({
 
           {selectedMember ? (
             <div style={{ background: '#fff', border: '1px solid #000', padding: '12px', color: '#000', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left', fontFamily: "'MS UI Gothic', sans-serif" }}>
-              <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '13px', borderBottom: '2px solid #000', paddingBottom: '4px', letterSpacing: '1px' }}>出資状況のお知らせ</div>
+              <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '13px', borderBottom: '2px solid #000', paddingBottom: '4px', letterSpacing: '1px' }}>{rt('出資状況のお知らせ', 'Capital Contribution Status Notice')}</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                <div><strong>{selectedMember.name} 様</strong></div>
-                <div>組合員NO: #{selectedMember.id}</div>
+                <div><strong>{selectedMember.name}{rt(' 様', '')}</strong></div>
+                <div>{rt('組合員NO:', 'Member NO:')} #{selectedMember.id}</div>
               </div>
-              <p style={{ margin: '4px 0', fontSize: '10px', lineHeight: '1.4' }}>あなたの出資状況は以下の通りとなっております。</p>
+              <p style={{ margin: '4px 0', fontSize: '10px', lineHeight: '1.4' }}>{rt('あなたの出資状況は以下の通りとなっております。', 'Your capital contribution status is as follows.')}</p>
               <div style={{ border: '1px solid #000', padding: '6px', background: '#fdfdfd', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div>現在出資合計額: <strong>{totalContribAmt.toLocaleString()} 円</strong></div>
-                <div>出資件数: <strong>{memberContribs.length} 件</strong></div>
+                <div>{rt('現在出資合計額:', 'Current Capital Total:')} <strong>{totalContribAmt.toLocaleString()}{rt(' 円', ' Yen')}</strong></div>
+                <div>{rt('出資件数:', 'Contribution Count:')} <strong>{memberContribs.length}{rt(' 件', ' items')}</strong></div>
               </div>
               <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: '9px' }}>
-                <div>作成日: 2026年6月16日</div>
+                <div>{rt('作成日: 2026年6月16日', 'Created: June 16, 2026')}</div>
                 <div style={{ textAlign: 'right' }}>
                   TNG Co-op<br />
-                  理事長: <strong>{chairmanName || '湯河原 太郎'}</strong>
+                  {rt('理事長:', 'President:')}{' '}<strong>{chairmanName || (lang === 'ja' ? '湯河原 太郎' : 'Taro Yugawara')}</strong>
                 </div>
               </div>
               <button
@@ -2040,16 +2043,16 @@ function RetroWin95Mock({
                 onClick={() => onPrintCertificate(selectedMember, memberContribs)}
                 style={{ fontSize: '11px', padding: '3px', marginTop: '8px', cursor: 'pointer' }}
               >
-                🖨️ 報告書印刷 (Print)
+                🖨️ {rt('報告書印刷 (Print)', 'Print Report')}
               </button>
             </div>
           ) : (
             <div style={{ background: '#fff', border: '1px inset #808080', padding: '12px', textAlign: 'center', fontStyle: 'italic', color: '#666', fontSize: '0.75rem' }}>
-              組合員を選択すると報告書プレビューが表示されます。
+              {rt('組合員を選択すると報告書プレビューが表示されます。', 'Select a member to view the report preview.')}
             </div>
           )}
 
-          <button className="retro-back-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', alignSelf: 'center' }}>戻る</button>
+          <button className="retro-back-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', alignSelf: 'center' }}>{rt('戻る', 'Back')}</button>
         </div>
       </div>
     );
@@ -2067,7 +2070,7 @@ function RetroWin95Mock({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>組合員選択</label>
+            <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('組合員選択', 'Select Member')}</label>
             <select
               data-testid="select-card-member"
               value={cardMemberId}
@@ -2081,20 +2084,20 @@ function RetroWin95Mock({
 
           {selectedMember ? (
             <div style={{ background: '#ffffff', padding: '12px', color: '#000000', border: '1px solid #000000', display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left', fontFamily: "'MS UI Gothic', sans-serif", boxSizing: 'border-box' }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', borderBottom: '2px solid #000000', paddingBottom: '3px', textAlign: 'center', letterSpacing: '2px' }}>TNG Co-op 組合員証</div>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', borderBottom: '2px solid #000000', paddingBottom: '3px', textAlign: 'center', letterSpacing: '2px' }}>{rt('TNG Co-op 組合員証', 'TNG Co-op Member Card')}</div>
               <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                <div style={{ width: '55px', height: '65px', border: '1px dashed #808080', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '9px', color: '#808080', background: '#f8f8f8', flexShrink: 0 }}>写真貼付</div>
+                <div style={{ width: '55px', height: '65px', border: '1px dashed #808080', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '9px', color: '#808080', background: '#f8f8f8', flexShrink: 0 }}>{rt('写真貼付', 'Photo')}</div>
                 <div style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
-                  <div><strong>氏名:</strong> <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{selectedMember.name}</span></div>
-                  <div><strong>組合員NO:</strong> #{selectedMember.id}</div>
-                  <div><strong>所属:</strong> {selectedMember.department || '未所属'}</div>
-                  <div style={{ fontSize: '9px', color: '#555', marginTop: '6px', textAlign: 'right' }}>神奈川県足柄下郡湯河原町</div>
+                  <div><strong>{rt('氏名:', 'Name:')}</strong> <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{selectedMember.name}</span></div>
+                  <div><strong>{rt('組合員NO:', 'Member NO:')}</strong> #{selectedMember.id}</div>
+                  <div><strong>{rt('所属:', 'Department:')}</strong> {selectedMember.department || rt('未所属', 'No Department')}</div>
+                  <div style={{ fontSize: '9px', color: '#555', marginTop: '6px', textAlign: 'right' }}>{rt('神奈川県足柄下郡湯河原町', 'Yugawara-machi, Kanagawa')}</div>
                 </div>
               </div>
             </div>
           ) : (
             <div style={{ background: '#fff', border: '1px inset #808080', padding: '12px', textAlign: 'center', fontStyle: 'italic', color: '#666', fontSize: '0.75rem' }}>
-              組合員を選択するとカードプレビューが表示されます。
+              {rt('組合員を選択するとカードプレビューが表示されます。', 'Select a member to view the card preview.')}
             </div>
           )}
 
@@ -2111,14 +2114,14 @@ function RetroWin95Mock({
               }}
               style={{ fontSize: '0.7rem', padding: '2px 8px' }}
             >
-              🖨️ 宛名ラベル印刷
+              🖨️ {rt('宛名ラベル印刷', 'Print Labels')}
             </button>
             <button
               className="retro-back-btn"
               onClick={() => onSelectNode(0)}
               style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px' }}
             >
-              戻る
+              {rt('戻る', 'Back')}
             </button>
           </div>
         </div>
@@ -2144,17 +2147,17 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px' }}>
             <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              支部管理メニュー
+              {rt('支部管理メニュー', 'Branch Management Menu')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
-              <button className="retro-btn" onClick={() => setSubView('dept-data')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>所属データ</button>
-              <button className="retro-btn" onClick={() => { setSubView('dept-preview'); }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>所属一覧印刷</button>
-              <button className="retro-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0', marginTop: '10px' }}>戻る</button>
+              <button className="retro-btn" onClick={() => setSubView('dept-data')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('所属データ', 'Affiliation Data')}</button>
+              <button className="retro-btn" onClick={() => { setSubView('dept-preview'); }} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('所属一覧印刷', 'Print Affiliations')}</button>
+              <button className="retro-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0', marginTop: '10px' }}>{rt('戻る', 'Back')}</button>
             </div>
           </div>
         </div>
       );
-    }
+    }Scenario:
 
     if (subView === 'dept-data') {
       const branchCategories = [
@@ -2174,12 +2177,12 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              所属データ
+              {rt('所属データ', 'Affiliation Data')}
             </div>
 
             <form onSubmit={handleSaveDept} style={{ display: 'flex', gap: '6px', alignItems: 'flex-end' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, textAlign: 'left' }}>
-                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>組合員</label>
+                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('組合員', 'Member')}</label>
                 <select
                   data-testid="select-dept-member"
                   value={deptMemberId}
@@ -2191,7 +2194,7 @@ function RetroWin95Mock({
                 </select>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, textAlign: 'left' }}>
-                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>所属部課</label>
+                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('所属部課', 'Department')}</label>
                 <input
                   data-testid="input-new-dept-name"
                   type="text"
@@ -2206,7 +2209,7 @@ function RetroWin95Mock({
                 className="retro-btn"
                 style={{ fontSize: '0.75rem', padding: '2px 8px', height: '24px' }}
               >
-                変更
+                {rt('変更', 'Change')}
               </button>
             </form>
 
@@ -2215,10 +2218,10 @@ function RetroWin95Mock({
                 <thead>
                   <tr style={{ background: '#c0c0c0', position: 'sticky', top: 0, fontWeight: 'bold' }}>
                     <th style={{ border: '1px solid #808080', padding: '3px' }}>No</th>
-                    <th style={{ border: '1px solid #808080', padding: '3px' }}>名称</th>
-                    <th style={{ border: '1px solid #808080', padding: '3px' }}>組合員数</th>
-                    <th style={{ border: '1px solid #808080', padding: '3px' }}>記入日</th>
-                    <th style={{ border: '1px solid #808080', padding: '3px' }}>修正日</th>
+                    <th style={{ border: '1px solid #808080', padding: '3px' }}>{rt('名称', 'Name')}</th>
+                    <th style={{ border: '1px solid #808080', padding: '3px' }}>{rt('組合員数', 'Member Count')}</th>
+                    <th style={{ border: '1px solid #808080', padding: '3px' }}>{rt('記入日', 'Created At')}</th>
+                    <th style={{ border: '1px solid #808080', padding: '3px' }}>{rt('修正日', 'Updated At')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2236,11 +2239,24 @@ function RetroWin95Mock({
                       if (m.department === '本年度法定脱退者') return '本年度法定脱退者';
                       return '一般組合員';
                     };
+                    const translateCategoryName = (catName: string) => {
+                      if (catName === '職員・ヘルパー') return rt('職員・ヘルパー', 'Staff / Helper');
+                      if (catName === '一般組合員') return rt('一般組合員', 'Regular Member');
+                      if (catName === '休眠組合員') return rt('休眠組合員', 'Dormant Member');
+                      if (catName === '脱退届け希望者') return rt('脱退届け希望者', 'Quit Request Pending');
+                      if (catName === 'みなし脱退') return rt('みなし脱退', 'Deemed Withdrawn');
+                      if (catName === '脱退済み') return rt('脱退済み', 'Withdrawn');
+                      if (catName === '本年度法定脱退者') return rt('本年度法定脱退者', 'Statutory Quit (This Year)');
+                      if (catName === '死亡の連絡有(未確認)') return rt('死亡の連絡有(未確認)', 'Deceased (Unconfirmed)');
+                      if (catName === 'ニュース不要') return rt('ニュース不要', 'No Newsletter');
+                      if (catName === '家族') return rt('家族', 'Family');
+                      return catName;
+                    };
                     const countVal = records.filter(m => getMemberCategory(m) === c.name).length;
                     return (
                       <tr key={c.no} style={{ borderBottom: '1px solid #ccc' }}>
                         <td style={{ border: '1px solid #808080', padding: '3px' }}>{c.no}</td>
-                        <td style={{ border: '1px solid #808080', padding: '3px' }}><strong>{c.name}</strong></td>
+                        <td style={{ border: '1px solid #808080', padding: '3px' }}><strong>{translateCategoryName(c.name)}</strong></td>
                         <td style={{ border: '1px solid #808080', padding: '3px' }}>{countVal}</td>
                         <td style={{ border: '1px solid #808080', padding: '3px' }}>{c.date1}</td>
                         <td style={{ border: '1px solid #808080', padding: '3px' }}>{c.date2}</td>
@@ -2262,7 +2278,7 @@ function RetroWin95Mock({
                   </tbody>
                 </table>
               </div>
-              <button className="retro-back-btn" onClick={() => setSubView('menu')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 14px', alignSelf: 'center' }}>戻る</button>
+              <button className="retro-back-btn" onClick={() => setSubView('menu')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 14px', alignSelf: 'center' }}>{rt('戻る', 'Back')}</button>
             </div>
           </div>
         </div>
@@ -2272,7 +2288,29 @@ function RetroWin95Mock({
     if (subView === 'dept-preview') {
       const getCreatedDateStr = () => {
         const d = new Date();
-        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} 作成`;
+        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${rt('作成', 'Created')}`;
+      };
+
+      const translateDeptReportName = (deptNameStr: string) => {
+        if (deptNameStr === '職員・ヘルパー') return rt('職員・ヘルパー', 'Staff / Helper');
+        if (deptNameStr === '一般組合員') return rt('一般組合員', 'Regular Member');
+        if (deptNameStr === '休眠組合員') return rt('休眠組合員', 'Dormant Member');
+        if (deptNameStr === '脱退届け希望者') return rt('脱退届け希望者', 'Quit Request Pending');
+        if (deptNameStr === 'みなし脱退') return rt('みなし脱退', 'Deemed Withdrawn');
+        if (deptNameStr === '脱退済み') return rt('脱退済み', 'Withdrawn');
+        if (deptNameStr === '本年度法定脱退者') return rt('本年度法定脱退者', 'Statutory Quit (This Year)');
+        if (deptNameStr === '死亡の連絡有(未確認)') return rt('死亡の連絡有(未確認)', 'Deceased (Unconfirmed)');
+        if (deptNameStr === 'ニュース不要') return rt('ニュース不要', 'No Newsletter');
+        if (deptNameStr === '事業団') return rt('事業団', 'Co-op Agency');
+        if (deptNameStr === '脱退') return rt('脱退', 'Resigned');
+        if (deptNameStr === '理事') return rt('理事', 'Director');
+        if (deptNameStr === '家族') return rt('家族', 'Family');
+        if (deptNameStr === '死亡') return rt('死亡', 'Deceased');
+        if (deptNameStr === '湯河原北職員・ヘルパー') return rt('湯河原北職員・ヘルパー', 'Yugawara North Staff/Helper');
+        if (deptNameStr === '湯河原南職員・ヘルパー') return rt('湯河原南職員・ヘルパー', 'Yugawara South Staff/Helper');
+        if (deptNameStr === '真鶴職員・ヘルパー') return rt('真鶴職員・ヘルパー', 'Manazuru Staff/Helper');
+        if (deptNameStr === '７００') return rt('７００', '700');
+        return deptNameStr;
       };
 
       const deptReportData = [
@@ -2312,23 +2350,32 @@ function RetroWin95Mock({
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <div style={{ fontSize: '24px', color: '#cc0000' }}>⚠️</div>
                 <div style={{ flex: 1 }}>
-                  イベント プロパティに指定した式 開く時 でエラーが発生しました: ユーザー定義エラー
+                  {rt(
+                    'イベント プロパティに指定した式 開く時 でエラーが発生しました: ユーザー定義エラー',
+                    'The expression On Open you entered as the event property setting produced the following error: User-defined error'
+                  )}
                   <br />
-                  * マクロ名、ユーザー定義関数名、[イベント プロシージャ] 以外の式が指定されています。
+                  {rt(
+                    '* マクロ名、ユーザー定義関数名、[イベント プロシージャ] 以外の式が指定されています。',
+                    '* The expression may not result in the name of a macro, the name of a user-defined function, or [Event Procedure].'
+                  )}
                   <br />
-                  * 関数、イベント、マクロの評価でエラーが発生しました。
+                  {rt(
+                    '* 関数、イベント、マクロの評価でエラーが発生しました。',
+                    '* There may have been an error evaluating the function, event, or macro.'
+                  )}
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px', marginTop: '10px' }}>
                 <button className="retro-btn" onClick={() => setShowOpenError(false)} style={{ padding: '2px 14px', fontWeight: 'bold' }}>OK</button>
-                <button className="retro-btn" style={{ padding: '2px 6px', opacity: 0.6 }} disabled>ヘルプの表示(E) &gt;&gt;</button>
+                <button className="retro-btn" style={{ padding: '2px 6px', opacity: 0.6 }} disabled>{rt('ヘルプの表示(E) >>', 'Show Help(E) >>')}</button>
               </div>
             </div>
           )}
 
           <div className="retro-body" style={{ background: '#fff', color: '#000', padding: '15px', height: '580px', overflowY: 'auto', fontFamily: "'MS UI Gothic', sans-serif", textAlign: 'left' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #000', paddingBottom: '4px', marginBottom: '10px', width: '700px', margin: '0 auto' }}>
-              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>◆ 所属 一覧 ◆</span>
+              <span style={{ fontSize: '15px', fontWeight: 'bold', letterSpacing: '4px' }}>{rt('◆ 所属 一覧 ◆', '◆ Affiliation List ◆')}</span>
               <span style={{ fontSize: '11px' }}>{getCreatedDateStr()} &nbsp;&nbsp;&nbsp;&nbsp; Page 1</span>
             </div>
             
@@ -2336,20 +2383,20 @@ function RetroWin95Mock({
               <thead style={{ display: 'block' }}>
                 <tr style={{ display: 'block', position: 'relative', width: '100%', borderBottom: '1px solid #000', height: '20px', fontSize: '10px', fontWeight: 'bold', margin: '5px 0' }}>
                   <th style={{ display: 'block', position: 'absolute', left: '0px', bottom: '2px', width: '40px', textAlign: 'right', fontWeight: 'bold' }}>NO</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '50px', bottom: '2px', fontWeight: 'bold' }}>名称</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '240px', bottom: '2px', fontWeight: 'bold' }}>郵便番号</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '330px', bottom: '2px', fontWeight: 'bold' }}>住所 1</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '520px', bottom: '2px', fontWeight: 'bold' }}>住所 2</th>
-                  <th style={{ display: 'block', position: 'absolute', left: '610px', bottom: '2px', width: '90px', textAlign: 'right', fontWeight: 'bold' }}>電話</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '50px', bottom: '2px', fontWeight: 'bold' }}>{rt('名称', 'Name')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '240px', bottom: '2px', fontWeight: 'bold' }}>{rt('郵便番号', 'Zip Code')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '330px', bottom: '2px', fontWeight: 'bold' }}>{rt('住所 1', 'Address 1')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '520px', bottom: '2px', fontWeight: 'bold' }}>{rt('住所 2', 'Address 2')}</th>
+                  <th style={{ display: 'block', position: 'absolute', left: '610px', bottom: '2px', width: '90px', textAlign: 'right', fontWeight: 'bold' }}>{rt('電話', 'Phone')}</th>
                 </tr>
               </thead>
               <tbody style={{ display: 'block', width: '100%', paddingBottom: '5px' }}>
                 {deptReportData.map(c => (
                   <tr key={c.no} style={{ display: 'block', position: 'relative', height: '20px', fontSize: '10px', padding: '2px 0' }}>
                     <td style={{ display: 'block', position: 'absolute', left: '0px', top: '2px', width: '40px', textAlign: 'right' }}>{c.no}</td>
-                    <td style={{ display: 'block', position: 'absolute', left: '50px', top: '2px', fontWeight: 'bold' }}>{c.name}</td>
+                    <td style={{ display: 'block', position: 'absolute', left: '50px', top: '2px', fontWeight: 'bold' }}>{translateDeptReportName(c.name)}</td>
                     <td style={{ display: 'block', position: 'absolute', left: '240px', top: '2px' }}>{c.postal || ''}</td>
-                    <td style={{ display: 'block', position: 'absolute', left: '330px', top: '2px' }}>{c.address1 || ''}</td>
+                    <td style={{ display: 'block', position: 'absolute', left: '330px', top: '2px' }}>{c.address1 ? rt('死亡', 'Deceased') : ''}</td>
                     <td style={{ display: 'block', position: 'absolute', left: '520px', top: '2px' }}>{c.address2 || ''}</td>
                     <td style={{ display: 'block', position: 'absolute', left: '610px', top: '2px', width: '90px', textAlign: 'right' }}>{c.phone || ''}</td>
                   </tr>
@@ -2358,7 +2405,7 @@ function RetroWin95Mock({
             </table>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', width: '700px', margin: '20px auto 0 auto', paddingTop: '10px' }}>
-              <button className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>閉じる</button>
+              <button className="retro-btn" onClick={() => setSubView('menu')} style={{ padding: '2px 12px', background: '#d4d0c8', color: '#000' }}>{rt('閉じる', 'Close')}</button>
             </div>
           </div>
         </div>
@@ -2395,13 +2442,13 @@ function RetroWin95Mock({
         <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
           <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px' }}>
             <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              協力者管理メニュー
+              {rt('協力者管理メニュー', 'Cooperators Management Menu')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
-              <button className="retro-btn" onClick={() => setSubView('ledger')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>協力者入力・検索</button>
-              <button className="retro-btn" onClick={() => alert('分類登録・変更は現在利用できません。')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>分類登録・変更</button>
-              <button className="retro-btn" onClick={() => alert('宛名印刷は現在利用できません。')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>宛名印刷</button>
-              <button className="retro-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0', marginTop: '10px' }}>戻る</button>
+              <button className="retro-btn" onClick={() => setSubView('ledger')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('協力者入力・検索', 'Cooperator Data Entry/Search')}</button>
+              <button className="retro-btn" onClick={() => alert(lang === 'ja' ? '分類登録・変更は現在利用できません。' : 'Category registration/edit is not available.')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('分類登録・変更', 'Register/Edit Category')}</button>
+              <button className="retro-btn" onClick={() => alert(lang === 'ja' ? '宛名印刷は現在利用できません。' : 'Address printing is not available.')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0' }}>{rt('宛名印刷', 'Print Addresses')}</button>
+              <button className="retro-btn" onClick={() => onSelectNode(0)} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '6px 0', marginTop: '10px' }}>{rt('戻る', 'Back')}</button>
             </div>
           </div>
         </div>
@@ -2412,13 +2459,13 @@ function RetroWin95Mock({
       <div data-testid="retro-win95-mock" className="retro-win95-container" style={{ width: '100%', border: 'none', boxShadow: 'none' }}>
         <div className="retro-body" style={{ background: '#d4d0c8', padding: '6px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ background: '#000080', color: '#fff', padding: '4px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-            協力者名簿
+            {rt('協力者名簿', 'Cooperators Registry')}
           </div>
 
           <form onSubmit={handleAddCoop} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <div style={{ display: 'flex', gap: '6px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>協力者氏名</label>
+                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('協力者氏名', 'Name')}</label>
                 <input
                   data-testid="input-coop-name"
                   type="text"
@@ -2428,7 +2475,7 @@ function RetroWin95Mock({
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>メール (Email)</label>
+                <label style={{ fontSize: '0.7rem', color: '#000', fontWeight: 'bold' }}>{rt('メール (Email)', 'Email')}</label>
                 <input
                   data-testid="input-coop-email"
                   type="email"
@@ -2444,7 +2491,7 @@ function RetroWin95Mock({
               className="retro-btn"
               style={{ fontSize: '0.75rem', padding: '4px', fontWeight: 'bold', marginTop: '2px' }}
             >
-              協力者新規登録
+              {rt('協力者新規登録', 'Register New Cooperator')}
             </button>
           </form>
 
@@ -2453,8 +2500,8 @@ function RetroWin95Mock({
               <thead>
                 <tr style={{ background: '#c0c0c0', position: 'sticky', top: 0 }}>
                   <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>ID</th>
-                  <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>氏名</th>
-                  <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>加入日</th>
+                  <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>{rt('氏名', 'Name')}</th>
+                  <th style={{ padding: '2px', borderBottom: '1px solid #808080' }}>{rt('加入日', 'Join Date')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -2469,7 +2516,7 @@ function RetroWin95Mock({
             </table>
           </div>
 
-          <button className="retro-back-btn" onClick={() => setSubView('menu')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', alignSelf: 'center' }}>戻る</button>
+          <button className="retro-back-btn" onClick={() => setSubView('menu')} style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', alignSelf: 'center' }}>{rt('戻る', 'Back')}</button>
         </div>
       </div>
     );
@@ -2493,27 +2540,27 @@ function RetroWin95Mock({
 
           <div style={{ background: '#fff', border: '1px inset #808080', padding: '8px', color: '#000', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d4d0c8', paddingBottom: '2px' }}>
-              <span>組合員総数 (Active):</span>
+              <span>{rt('組合員総数 (Active):', 'Active Members:')}</span>
               <strong data-testid="hud-active-members">{activeCount}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d4d0c8', paddingBottom: '2px' }}>
-              <span>出資総額 (Capital Total):</span>
+              <span>{rt('出資総額 (Capital Total):', 'Capital Total:')}</span>
               <strong>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(totalCapital)}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d4d0c8', paddingBottom: '2px' }}>
-              <span>協力者総数 (Cooperators):</span>
+              <span>{rt('協力者総数 (Cooperators):', 'Cooperators Total:')}</span>
               <strong>{cooperatorCount}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d4d0c8', paddingBottom: '2px' }}>
-              <span>物故者総数 (Deceased):</span>
+              <span>{rt('物故者総数 (Deceased):', 'Deceased Total:')}</span>
               <strong>{deceasedCount}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d4d0c8', paddingBottom: '2px' }}>
-              <span>年会費未払者 (Unpaid Dues):</span>
+              <span>{rt('年会費未払者 (Unpaid Dues):', 'Unpaid Dues:')}</span>
               <strong>{unpaidCount}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d4d0c8', paddingBottom: '2px' }}>
-              <span>年会費支払済 (Paid Dues):</span>
+              <span>{rt('年会費支払済 (Paid Dues):', 'Paid Dues:')}</span>
               <strong>{paidCount}</strong>
             </div>
           </div>
@@ -2525,7 +2572,7 @@ function RetroWin95Mock({
               onClick={() => onSelectNode(0)}
               style={{ fontSize: '0.75rem', padding: '2px 12px', cursor: 'pointer' }}
             >
-              {lang === 'ja' ? '閉じる' : 'Close'}
+              {rt('閉じる', 'Close')}
             </button>
           </div>
         </div>
@@ -2548,6 +2595,14 @@ function RetroWin95Mock({
 function App() {
   const [lang, setLang] = useState(() => localStorage.getItem('kksystem_lang') || 'ja')
   const t = (key: string) => (dicts as any)[lang]?.[key] || key
+
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -2961,6 +3016,33 @@ function App() {
   const unissuedCertsCount = 777 - members.filter(m => m.cert_issued).length
 
   if (appMode === 'retro') {
+    const containerWidth = retroWindowSize === 'wide' ? 900 : 380;
+    const isMobile = windowWidth < (containerWidth + 40);
+    const scale = isMobile ? Math.min(1, (windowWidth - 20) / containerWidth) : 1;
+    const retroWindowStyle: React.CSSProperties = isMobile ? {
+      position: 'absolute',
+      left: '50%',
+      top: '20px',
+      transform: `translateX(-50%) scale(${scale})`,
+      transformOrigin: 'top center',
+      width: `${containerWidth}px`,
+      height: retroWindowSize === 'wide' ? '665px' : 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      margin: 0,
+      zIndex: 1000
+    } : {
+      position: 'absolute',
+      left: retroWindowPos.x,
+      top: retroWindowPos.y,
+      width: `${containerWidth}px`,
+      height: retroWindowSize === 'wide' ? '665px' : 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      margin: 0,
+      zIndex: 1000
+    };
+
     return (
       <div className="win95-desktop no-print">
         {/* Desktop Icons */}
@@ -2994,17 +3076,7 @@ function App() {
         <div
           data-testid="win95-db-window"
           className="retro-win95-container"
-          style={{
-            position: 'absolute',
-            left: retroWindowPos.x,
-            top: retroWindowPos.y,
-            width: retroWindowSize === 'wide' ? '900px' : '380px',
-            height: retroWindowSize === 'wide' ? '665px' : 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            margin: 0,
-            zIndex: 1000
-          }}
+          style={retroWindowStyle}
         >
           <div
             className="retro-title-bar"
@@ -3012,7 +3084,7 @@ function App() {
             style={{ cursor: 'move', userSelect: 'none' }}
           >
             <span>
-              TNG Co-op 出資金管理システム
+              {lang === 'ja' ? 'TNG Co-op 出資金管理システム' : 'TNG Co-op Capital Management System'}
               {isDemoMode 
                 ? (lang === 'ja' ? ' [デモモード: ブラウザ保存]' : ' [DEMO MODE: Browser-Only]') 
                 : (lang === 'ja' ? ' [通常モード: サーバー保存]' : ' [STANDARD MODE: Server Database]')}
