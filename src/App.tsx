@@ -10,6 +10,292 @@ import type { Contribution, Member, Stats } from './types'
 
 const dicts = { ja: jaDict, en: enDict }
 
+const romajiMap: { [key: string]: string } = {
+  'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
+  'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
+  'さ': 'sa', 'し': 'shi', 'す': 'su', 'せ': 'se', 'そ': 'so',
+  'た': 'ta', 'ち': 'chi', 'つ': 'tsu', 'て': 'te', 'と': 'to',
+  'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no',
+  'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho',
+  'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo',
+  'や': 'ya', 'ゆ': 'yu', 'よ': 'yo',
+  'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro',
+  'わ': 'wa', 'を': 'o', 'ん': 'n',
+  'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
+  'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
+  'だ': 'da', 'ぢ': 'ji', 'づ': 'zu', 'で': 'de', 'ど': 'do',
+  'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo',
+  'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po',
+  'ぁ': 'a', 'ぃ': 'i', 'ぅ': 'u', 'ぇ': 'e', 'ぉ': 'o',
+  'っ': 'tsu',
+  'ゃ': 'ya', 'ゅ': 'yu', 'ょ': 'yo',
+  'ゎ': 'wa',
+  'ア': 'a', 'イ': 'i', 'ウ': 'u', 'エ': 'e', 'オ': 'o',
+  'カ': 'ka', 'キ': 'ki', 'ク': 'ku', 'ケ': 'ke', 'コ': 'ko',
+  'サ': 'sa', 'シ': 'shi', 'ス': 'su', 'セ': 'se', 'ソ': 'so',
+  'タ': 'ta', 'チ': 'chi', 'ツ': 'tsu', 'テ': 'te', 'ト': 'to',
+  'ナ': 'na', 'ニ': 'ni', 'ヌ': 'nu', 'ネ': 'ne', 'ノ': 'no',
+  'ハ': 'ha', 'ヒ': 'hi', 'フ': 'fu', 'ヘ': 'he', 'ホ': 'ho',
+  'マ': 'ma', 'ミ': 'mi', 'ム': 'mu', 'メ': 'me', 'モ': 'mo',
+  'ヤ': 'ya', 'ユ': 'yu', 'ヨ': 'yo',
+  'ラ': 'ra', 'リ': 'ri', 'ル': 'ru', 'レ': 're', 'ロ': 'ro',
+  'ワ': 'wa', 'ヲ': 'o', 'ン': 'n',
+  'ガ': 'ga', 'ギ': 'gi', 'グ': 'gu', 'ゲ': 'ge', 'ゴ': 'go',
+  'ザ': 'za', 'ジ': 'ji', 'ズ': 'zu', 'ゼ': 'ze', 'ゾ': 'zo',
+  'ダ': 'da', 'ヂ': 'ji', 'ヅ': 'zu', 'デ': 'de', 'ド': 'do',
+  'バ': 'ba', 'ビ': 'bi', 'ブ': 'bu', 'ベ': 'be', 'ボ': 'bo',
+  'パ': 'pa', 'ピ': 'pi', 'プ': 'pu', 'ペ': 'pe', 'ポ': 'po',
+  'ァ': 'a', 'ィ': 'i', 'ゥ': 'u', 'ェ': 'e', 'ォ': 'o',
+  'ッ': 'tsu',
+  'ャ': 'ya', 'ュ': 'yu', 'ョ': 'yo',
+  'ヮ': 'wa',
+  'ー': ''
+};
+
+const digraphs: { [key: string]: string } = {
+  'きゃ': 'kya', 'きゅ': 'kyu', 'きょ': 'kyo',
+  'しゃ': 'sha', 'しゅ': 'shu', 'しょ': 'sho',
+  'ちゃ': 'cha', 'ちゅ': 'chu', 'ちょ': 'cho',
+  'にゃ': 'nya', 'にゅ': 'nyu', 'にょ': 'nyo',
+  'ひゃ': 'hya', 'ひゅ': 'hyu', 'ひょ': 'hyo',
+  'みゃ': 'mya', 'みゅ': 'myu', 'みょ': 'myo',
+  'りゃ': 'rya', 'りゅ': 'ryu', 'りょ': 'ryo',
+  'ぎゃ': 'gya', 'ぎゅ': 'gyu', 'ぎょ': 'gyo',
+  'じゃ': 'ja', 'じゅ': 'ju', 'じょ': 'jo',
+  'びゃ': 'bya', 'びゅ': 'byu', 'びょ': 'byo',
+  'ぴゃ': 'pya', 'ぴゅ': 'pyu', 'ぴょ': 'pyo',
+  'キャ': 'kya', 'キュ': 'kyu', 'キョ': 'kyo',
+  'シャ': 'sha', 'シュ': 'shu', 'ショ': 'sho',
+  'チャ': 'cha', 'チュ': 'chu', 'チョ': 'cho',
+  'ニャ': 'nya', 'ニュ': 'nyu', 'ニョ': 'nyo',
+  'ヒャ': 'hya', 'ヒュ': 'hyu', 'ヒョ': 'hyo',
+  'ミャ': 'mya', 'ミュ': 'myu', 'ミョ': 'myo',
+  'リャ': 'rya', 'リュ': 'ryu', 'リョ': 'ryo',
+  'ギャ': 'gya', 'ギュ': 'gyu', 'ギョ': 'gyo',
+  'ジャ': 'ja', 'ジュ': 'ju', 'ジョ': 'jo',
+  'ビャ': 'bya', 'ビュ': 'byu', 'ビョ': 'byo',
+  'ピャ': 'pya', 'ピュ': 'pyu', 'ピョ': 'pyo'
+};
+
+function kanaToRomaji(str: string): string {
+  if (!str) return '';
+  let result = '';
+  let i = 0;
+  while (i < str.length) {
+    if (i + 1 < str.length) {
+      const twoChars = str.substring(i, i + 2);
+      if (digraphs[twoChars]) {
+        result += digraphs[twoChars];
+        i += 2;
+        continue;
+      }
+    }
+    const char = str[i];
+    if (char === 'っ' || char === 'ッ') {
+      if (i + 1 < str.length) {
+        const nextChar = str[i + 1];
+        let nextRomaji = '';
+        if (i + 2 < str.length && digraphs[str.substring(i + 1, i + 3)]) {
+          nextRomaji = digraphs[str.substring(i + 1, i + 3)];
+        } else {
+          nextRomaji = romajiMap[nextChar] || '';
+        }
+        if (nextRomaji) {
+          result += nextRomaji[0];
+          i++;
+          continue;
+        }
+      }
+    }
+    result += romajiMap[char] || char;
+    i++;
+  }
+  return result.toLowerCase();
+}
+
+function normalizeRomaji(str: string): string {
+  return str
+    .replace(/aa/g, 'a')
+    .replace(/ii/g, 'i')
+    .replace(/uu/g, 'u')
+    .replace(/ee/g, 'e')
+    .replace(/oo/g, 'o')
+    .replace(/ou/g, 'o');
+}
+
+interface AutocompleteMemberSelectProps {
+  members: Member[];
+  value: string | number;
+  onChange: (id: string) => void;
+  placeholder: string;
+  testId?: string;
+  lang: string;
+  required?: boolean;
+}
+
+const AutocompleteMemberSelect: React.FC<AutocompleteMemberSelectProps> = ({
+  members,
+  value,
+  onChange,
+  placeholder,
+  testId,
+  lang,
+  required = false,
+}) => {
+  const [query, setQuery] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const selectedMember = useMemo(() => {
+    if (!value) return null
+    return members.find(m => String(m.id) === String(value)) || null
+  }, [members, value])
+
+  const suggestions = useMemo(() => {
+    if (!query.trim()) return []
+    const q = query.toLowerCase().trim()
+    const normalizedQ = normalizeRomaji(q)
+    return members.filter(m => {
+      if (m.name && m.name.toLowerCase().includes(q)) return true
+      if (String(m.id).includes(q)) return true
+      if (m.kananame) {
+        const lowerKana = m.kananame.toLowerCase()
+        if (lowerKana.includes(q)) return true
+        const romaji = kanaToRomaji(m.kananame)
+        if (romaji.includes(q) || normalizeRomaji(romaji).includes(normalizedQ)) return true
+      }
+      return false
+    }).slice(0, 15)
+  }, [members, query])
+
+
+  useEffect(() => {
+    setHighlightedIndex(-1)
+  }, [suggestions])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSelect = (member: Member) => {
+    onChange(String(member.id))
+    setQuery('')
+    setIsOpen(false)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isOpen) {
+      if (e.key === 'ArrowDown') {
+        setIsOpen(true)
+      }
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setHighlightedIndex(prev => (prev + 1) % Math.max(1, suggestions.length))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlightedIndex(prev => (prev - 1 + suggestions.length) % Math.max(1, suggestions.length))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+        handleSelect(suggestions[highlightedIndex])
+      }
+    } else if (e.key === 'Escape') {
+      setIsOpen(false)
+    }
+  }
+
+  return (
+    <div className="modern-autocomplete-container" ref={containerRef}>
+      <select
+        data-testid={testId}
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+        required={required}
+        style={{
+          position: 'absolute',
+          opacity: 0,
+          pointerEvents: 'none',
+          width: '100%',
+          height: '100%',
+          left: 0,
+          top: 0,
+          zIndex: -1
+        }}
+      >
+        <option value="">{placeholder}</option>
+        {members.map(m => (
+          <option key={m.id} value={String(m.id)}>
+            {m.name}
+          </option>
+        ))}
+      </select>
+      {selectedMember ? (
+        <div className="modern-autocomplete-selected-badge" data-testid={testId ? `${testId}-selected` : undefined}>
+          <span>
+            👤 #{selectedMember.id} &nbsp; <strong>{selectedMember.name}</strong> 
+            {selectedMember.department && ` (${selectedMember.department})`}
+          </span>
+          <button
+            type="button"
+            className="modern-autocomplete-selected-badge-clear"
+            onClick={() => onChange('')}
+            title={lang === 'ja' ? '選択をクリア' : 'Clear selection'}
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <div className="modern-autocomplete-wrapper">
+          <input
+            data-testid={testId ? `${testId}-input` : undefined}
+            type="text"
+            className="modern-search-input"
+            style={{ paddingLeft: '1rem' }}
+            placeholder={placeholder}
+            value={query}
+            onChange={e => {
+              setQuery(e.target.value)
+              setIsOpen(true)
+            }}
+            onFocus={() => setIsOpen(true)}
+            onKeyDown={handleKeyDown}
+          />
+          {isOpen && suggestions.length > 0 && (
+            <ul className="modern-autocomplete-suggestions" data-testid={testId ? `${testId}-suggestions` : undefined}>
+              {suggestions.map((m, index) => (
+                <li
+                  key={m.id}
+                  className={`modern-autocomplete-suggestion-item ${highlightedIndex === index ? 'highlighted' : ''}`}
+                  onClick={() => handleSelect(m)}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                >
+                  <div>
+                    <strong>{m.name}</strong>
+                    <span className="modern-autocomplete-suggestion-item-subtext" style={{ marginLeft: '0.5rem' }}>
+                      ({m.kananame || ''})
+                    </span>
+                  </div>
+                  <span className="modern-autocomplete-suggestion-item-subtext">#{m.id}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface RetroWin95MockProps {
   menuIndex: number;
   lang: string;
@@ -2974,6 +3260,18 @@ function App() {
     }, 100)
   }
 
+  const handleSelectDeptMember = (id: string) => {
+    setSelectedDeptMember(id)
+    if (id) {
+      const m = members.find(x => String(x.id) === String(id))
+      if (m) {
+        setNewDeptName(m.department || '')
+      }
+    } else {
+      setNewDeptName('')
+    }
+  }
+
   const handleSaveDepartment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedDeptMember || !newDeptName) return
@@ -4233,10 +4531,15 @@ function App() {
               <h2>{t('title_record_capital')}</h2>
               <form onSubmit={handleAddContribution}>
                 <div className="form-row">
-                  <select data-testid="select-contrib-member" aria-label={t('ph_select_member')} required value={newContribution.member_id} onChange={e => setNewContribution({ ...newContribution, member_id: Number(e.target.value) as any })}>
-                    <option value="" disabled>{t('ph_select_member')}</option>
-                    {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                  </select>
+                  <AutocompleteMemberSelect
+                    testId="select-contrib-member"
+                    members={members}
+                    value={newContribution.member_id}
+                    onChange={val => setNewContribution({ ...newContribution, member_id: val ? Number(val) : '' as any })}
+                    placeholder={t('ph_select_member')}
+                    lang={lang}
+                    required
+                  />
                   <input
                     data-testid="input-contrib-amount"
                     aria-label={t('ph_amount')}
@@ -4385,10 +4688,14 @@ function App() {
                     <h2>{t('title_union_card')}</h2>
                     <div className="union-card-container">
                       <div style={{ width: '100%', maxWidth: '400px' }}>
-                        <select data-testid="select-card-member" value={selectedCardMember} onChange={e => setSelectedCardMember(e.target.value)} style={{ width: '100%' }}>
-                          <option value="">{t('ph_select_member')}</option>
-                          {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                        </select>
+                        <AutocompleteMemberSelect
+                          testId="select-card-member"
+                          members={members}
+                          value={selectedCardMember}
+                          onChange={setSelectedCardMember}
+                          placeholder={t('ph_select_member')}
+                          lang={lang}
+                        />
                       </div>
 
                       {selectedCardMember && (() => {
@@ -4423,10 +4730,15 @@ function App() {
                   <div className="departments-view glass-card">
                     <h2>{t('title_dept_mgmt')}</h2>
                     <form onSubmit={handleSaveDepartment} className="profile-edit-form" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
-                      <select data-testid="select-dept-member" required value={selectedDeptMember} onChange={e => setSelectedDeptMember(e.target.value)}>
-                        <option value="">{t('ph_select_member')}</option>
-                        {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                      </select>
+                      <AutocompleteMemberSelect
+                        testId="select-dept-member"
+                        members={members}
+                        value={selectedDeptMember}
+                        onChange={handleSelectDeptMember}
+                        placeholder={t('ph_select_member')}
+                        lang={lang}
+                        required
+                      />
                       <input data-testid="input-new-dept-name" type="text" placeholder={t('lbl_department')} required value={newDeptName} onChange={e => setNewDeptName(e.target.value)} style={{ flex: 1 }} />
                       <button data-testid="btn-save-dept" type="submit" className="btn-primary">{t('btn_save')}</button>
                     </form>
