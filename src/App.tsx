@@ -1,6 +1,6 @@
 import './App.css'
 
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 
 import { apiAddContribution, apiAddMember, apiGetContributions, apiGetMembers, apiGetStats, apiUpdateMember, isDemoMode } from './api'
 import DashboardCharts from './DashboardCharts'
@@ -2726,6 +2726,20 @@ function App() {
   const [editingMemberId, setEditingMemberId] = useState<number | null>(null)
   const [editFormData, setEditFormData] = useState<Partial<Member>>({})
 
+  // Modern Theme 2028 Search, Filter & Pagination states
+  const [modernSearchQuery, setModernSearchQuery] = useState('')
+  const [modernSearchDept, setModernSearchDept] = useState('')
+  const [modernSearchStatus, setModernSearchStatus] = useState('')
+  const [modernSearchLiving, setModernSearchLiving] = useState('')
+  const [modernSortKey, setModernSortKey] = useState('id-asc')
+  const [modernCurrentPage, setModernCurrentPage] = useState(1)
+  const [modernItemsPerPage, setModernItemsPerPage] = useState(50)
+
+  // Reset page when search/filter/sort options change
+  useEffect(() => {
+    setModernCurrentPage(1)
+  }, [modernSearchQuery, modernSearchDept, modernSearchStatus, modernSearchLiving, modernSortKey, modernItemsPerPage])
+
   // Forms states
   const [newMember, setNewMember] = useState<Partial<Member>>({
     name: '',
@@ -2792,6 +2806,68 @@ function App() {
   useEffect(() => {
     fetchData()
   }, [])
+
+  // Modern Search & Filter Pipeline
+  const filteredAndSortedMembers = useMemo(() => {
+    // 1. Filtering
+    let result = [...members]
+    
+    if (modernSearchQuery.trim()) {
+      const q = modernSearchQuery.toLowerCase().trim()
+      result = result.filter(m => 
+        (m.name && m.name.toLowerCase().includes(q)) ||
+        (m.kananame && m.kananame.toLowerCase().includes(q)) ||
+        (m.email && m.email.toLowerCase().includes(q)) ||
+        (m.phone && m.phone.toLowerCase().includes(q)) ||
+        (m.postal && m.postal.toLowerCase().includes(q)) ||
+        (String(m.id).includes(q))
+      )
+    }
+
+    if (modernSearchDept) {
+      result = result.filter(m => m.department === modernSearchDept)
+    }
+
+    if (modernSearchStatus) {
+      result = result.filter(m => m.status === modernSearchStatus)
+    }
+
+    if (modernSearchLiving) {
+      if (modernSearchLiving === 'living') {
+        result = result.filter(m => m.is_living === 1 || m.is_living === true)
+      } else if (modernSearchLiving === 'deceased') {
+        result = result.filter(m => !(m.is_living === 1 || m.is_living === true))
+      }
+    }
+
+    // 2. Sorting
+    result.sort((a, b) => {
+      if (modernSortKey === 'id-asc') {
+        return a.id - b.id
+      } else if (modernSortKey === 'id-desc') {
+        return b.id - a.id
+      } else if (modernSortKey === 'name-asc') {
+        return (a.name || '').localeCompare(b.name || '', 'ja')
+      } else if (modernSortKey === 'name-desc') {
+        return (b.name || '').localeCompare(a.name || '', 'ja')
+      } else if (modernSortKey === 'join-asc') {
+        return (a.join_date || '').localeCompare(b.join_date || '')
+      } else if (modernSortKey === 'join-desc') {
+        return (b.join_date || '').localeCompare(a.join_date || '')
+      }
+      return 0
+    })
+
+    return result
+  }, [members, modernSearchQuery, modernSearchDept, modernSearchStatus, modernSearchLiving, modernSortKey])
+
+  // Pagination slicing
+  const paginatedMembers = useMemo(() => {
+    const startIndex = (modernCurrentPage - 1) * modernItemsPerPage
+    return filteredAndSortedMembers.slice(startIndex, startIndex + modernItemsPerPage)
+  }, [filteredAndSortedMembers, modernCurrentPage, modernItemsPerPage])
+
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedMembers.length / modernItemsPerPage))
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -3700,187 +3776,440 @@ function App() {
             </div>
 
             <div className="table-card glass-card top-margin">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <h2 style={{ margin: 0 }}>組合員名簿</h2>
-                <button data-testid="btn-print-labels" className="btn-secondary" onClick={() => handlePrintLabels()} style={{ fontSize: '0.85rem' }}>
+                <button data-testid="btn-print-labels" className="btn-secondary" onClick={() => handlePrintLabels(filteredAndSortedMembers)} style={{ fontSize: '0.85rem' }}>
                   🖨️ {t('btn_print_labels')}
                 </button>
               </div>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>{t('th_id')}</th>
-                    <th>{t('ph_name')}</th>
-                    <th>{t('ph_email')}</th>
-                    <th>{t('th_join_date')}</th>
-                    <th>{t('th_status')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {members.map(member => {
-                    const memberContribs = contributions.filter(c => c.member_id === member.id);
-                    const totalCapital = memberContribs.reduce((sum, c) => sum + Number(c.amount), 0);
-                    const isExpanded = expandedMemberId === member.id;
-                    const isEditing = editingMemberId === member.id;
-                    return (
-                      <Fragment key={member.id}>
-                        <tr data-testid={`member-row-${member.id}`} onClick={() => toggleExpand(member.id)} className={`clickable-row ${isExpanded ? 'expanded-active' : ''}`}>
-                          <td>#{member.id}</td>
-                          <td><strong>{member.name}</strong></td>
-                          <td className={!member.email ? 'text-muted' : ''}>{member.email || '-'}</td>
-                          <td className={!member.join_date ? 'text-muted' : ''}>{member.join_date || '-'}</td>
-                          <td>
-                            <span className={'status-badge ' + member.status}>{member.status === 'active' ? t('status_active') : t('status_inactive')}</span>
-                            {!(member.is_living === 1 || member.is_living === true) && <span className={'status-badge inactive'} style={{ marginLeft: '0.5rem' }}>{t('status_deceased')}</span>}
-                          </td>
-                        </tr>
-                        {isExpanded && (
-                          <tr className="expanded-row-container">
-                            <td colSpan={5} style={{ padding: 0, borderBottom: '2px solid var(--primary)' }}>
-                              <div className="expanded-content">
-                                {isEditing ? (
-                                  <form className="profile-edit-form" onSubmit={handleUpdateMember}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <input aria-label={t('ph_name')} type="text" placeholder={t('ph_name')} required value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} onFocus={() => setActiveModernFocusField('name')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_email')} type="email" placeholder={t('ph_email_optional')} value={editFormData.email || ''} onChange={e => setEditFormData({ ...editFormData, email: e.target.value })} onFocus={() => setActiveModernFocusField('email')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_kananame')} type="text" placeholder={t('ph_kananame_optional')} value={editFormData.kananame || ''} onChange={e => setEditFormData({ ...editFormData, kananame: e.target.value })} onFocus={() => setActiveModernFocusField('kananame')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <select aria-label={t('lbl_gender')} value={editFormData.gender || ''} onChange={e => setEditFormData({ ...editFormData, gender: e.target.value })} onFocus={() => setActiveModernFocusField('gender')} onBlur={() => setActiveModernFocusField(null)}>
-                                          <option value="">{t('lbl_gender')}</option>
-                                          <option value="1">{t('lbl_gender_male')}</option>
-                                          <option value="2">{t('lbl_gender_female')}</option>
-                                          <option value="0">{t('lbl_gender_other')}</option>
-                                        </select>
-                                        <input aria-label={t('ph_dob')} type="date" value={editFormData.dob || ''} onChange={e => setEditFormData({ ...editFormData, dob: e.target.value })} onFocus={() => setActiveModernFocusField('dob')} onBlur={() => setActiveModernFocusField(null)} />
-                                      </div>
-                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <input aria-label={t('ph_postal')} type="text" placeholder={t('ph_postal')} value={editFormData.postal || ''} onChange={e => setEditFormData({ ...editFormData, postal: e.target.value })} onFocus={() => setActiveModernFocusField('postal')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_address')} type="text" placeholder={t('ph_address')} value={editFormData.address || ''} onChange={e => setEditFormData({ ...editFormData, address: e.target.value })} onFocus={() => setActiveModernFocusField('address')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_address2_optional')} type="text" placeholder={t('ph_address2_optional')} value={editFormData.address2 || ''} onChange={e => setEditFormData({ ...editFormData, address2: e.target.value })} onFocus={() => setActiveModernFocusField('address2')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_phone')} type="text" placeholder={t('ph_phone')} value={editFormData.phone || ''} onChange={e => setEditFormData({ ...editFormData, phone: e.target.value })} onFocus={() => setActiveModernFocusField('phone')} onBlur={() => setActiveModernFocusField(null)} />
-                                      </div>
-                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <input aria-label={t('ph_district')} type="text" placeholder={t('ph_district')} value={editFormData.district || ''} onChange={e => setEditFormData({ ...editFormData, district: e.target.value })} onFocus={() => setActiveModernFocusField('district')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <select aria-label={t('lbl_department')} value={editFormData.department || ''} onChange={e => setEditFormData({ ...editFormData, department: e.target.value })} onFocus={() => setActiveModernFocusField('department')} onBlur={() => setActiveModernFocusField(null)}>
-                                          <option value="地域支援部">地域支援部</option>
-                                          <option value="介護福祉部">介護福祉部</option>
-                                          <option value="総務管理部">総務管理部</option>
-                                        </select>
-                                        <select aria-label={t('ph_delivery')} value={editFormData.delivery || ''} onChange={e => setEditFormData({ ...editFormData, delivery: e.target.value })} onFocus={() => setActiveModernFocusField('delivery')} onBlur={() => setActiveModernFocusField(null)}>
-                                          <option value="11">送付先11</option>
-                                          <option value="12">送付先12</option>
-                                          <option value="13">送付先13</option>
-                                          <option value="14">送付先14</option>
-                                        </select>
-                                        <input aria-label={t('th_join_date')} type="date" value={editFormData.join_date || ''} onChange={e => setEditFormData({ ...editFormData, join_date: e.target.value })} onFocus={() => setActiveModernFocusField('join_date')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_quit_date')} type="date" value={editFormData.quit_date || ''} onChange={e => setEditFormData({ ...editFormData, quit_date: e.target.value })} onFocus={() => setActiveModernFocusField('quit_date')} onBlur={() => setActiveModernFocusField(null)} />
-                                      </div>
-                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <input aria-label={t('ph_emergency_name')} type="text" placeholder={t('ph_emergency_name_optional')} value={editFormData.emergency_name || ''} onChange={e => setEditFormData({ ...editFormData, emergency_name: e.target.value })} onFocus={() => setActiveModernFocusField('emergency_name')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_emergency_zip')} type="text" placeholder={t('ph_emergency_zip_optional')} value={editFormData.emergency_zip || ''} onChange={e => setEditFormData({ ...editFormData, emergency_zip: e.target.value })} onFocus={() => setActiveModernFocusField('emergency_zip')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_emergency_address')} type="text" placeholder={t('ph_emergency_address_optional')} value={editFormData.emergency_address || ''} onChange={e => setEditFormData({ ...editFormData, emergency_address: e.target.value })} onFocus={() => setActiveModernFocusField('emergency_address')} onBlur={() => setActiveModernFocusField(null)} />
-                                        <input aria-label={t('ph_emergency_phone')} type="text" placeholder={t('ph_emergency_phone_optional')} value={editFormData.emergency_phone || ''} onChange={e => setEditFormData({ ...editFormData, emergency_phone: e.target.value })} onFocus={() => setActiveModernFocusField('emergency_phone')} onBlur={() => setActiveModernFocusField(null)} />
-                                      </div>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-                                      <input aria-label={t('ph_remarks')} type="text" placeholder={t('ph_remarks_optional')} value={editFormData.remarks || ''} onChange={e => setEditFormData({ ...editFormData, remarks: e.target.value })} onFocus={() => setActiveModernFocusField('remarks')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 1 }} />
-                                      <input aria-label={t('ph_hope')} type="text" placeholder={t('ph_hope_optional')} value={editFormData.hope || ''} onChange={e => setEditFormData({ ...editFormData, hope: e.target.value })} onFocus={() => setActiveModernFocusField('hope')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 1 }} />
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                      <div style={{ display: 'flex', gap: '1.5rem' }}>
-                                        <select aria-label={t('th_status')} value={editFormData.status} onChange={e => setEditFormData({ ...editFormData, status: e.target.value })} onFocus={() => setActiveModernFocusField('status')} onBlur={() => setActiveModernFocusField(null)}>
-                                          <option value="active">{t('status_active')}</option>
-                                          <option value="inactive">{t('status_inactive')}</option>
-                                        </select>
-                                        <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                          <input aria-label={t('lbl_deceased')} type="checkbox" checked={!editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: !e.target.checked })} onFocus={() => setActiveModernFocusField('is_living')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
-                                          {t('lbl_deceased')}
-                                        </label>
-                                        <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                          <input aria-label={t('lbl_send_dm')} type="checkbox" checked={!!editFormData.send_dm} onChange={e => setEditFormData({ ...editFormData, send_dm: e.target.checked })} onFocus={() => setActiveModernFocusField('send_dm')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
-                                          {t('lbl_send_dm')}
-                                        </label>
-                                      </div>
-                                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button type="button" className="btn-secondary" onClick={() => setEditingMemberId(null)}>{t('btn_cancel')}</button>
-                                        <button data-testid="btn-save-member" type="submit" className="btn-primary">{t('btn_save')}</button>
-                                      </div>
-                                    </div>
-                                  </form>
-                                ) : (
-                                  <div className="expanded-profile-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
-                                    <div className="ep-info">
-                                      <h4>{t('title_profile_details')}</h4>
-                                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.4rem 1rem', fontSize: '0.85rem', color: 'var(--text-main)' }}>
-                                        <p><strong>かな:</strong> {member.kananame || '-'}</p>
-                                        <p><strong>性別:</strong> {member.gender === '1' ? t('lbl_gender_male') : (member.gender === '2' ? t('lbl_gender_female') : t('lbl_gender_other'))}</p>
-                                        <p><strong>生年月日:</strong> {member.dob || '-'}</p>
-                                        <p><strong>郵便番号:</strong> {member.postal || '-'}</p>
-                                        <p><strong>電話番号:</strong> {member.phone || '-'}</p>
-                                        <p><strong>メールアドレス:</strong> {member.email || '-'}</p>
-                                        <p><strong>学区:</strong> {member.district || '-'}</p>
-                                        <p><strong>送付先区分:</strong> {member.delivery || '-'}</p>
-                                        <p><strong>脱退日:</strong> {member.quit_date || '-'}</p>
-                                      </div>
-                                      <p style={{ margin: '0.5rem 0' }}><strong>{t('ph_address')}:</strong> <span className={!member.address ? 'text-muted' : ''}>{member.address || t('lbl_unregistered')}</span> {member.address2 || ''}</p>
-                                      <p style={{ margin: '0.5rem 0' }}><strong>{t('lbl_dm_allowed')}:</strong> <span className={`status-badge ${member.send_dm ? 'active' : 'inactive'}`}>{member.send_dm ? t('lbl_dm_yes') : t('lbl_dm_no')}</span></p>
 
-                                      <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '0.5rem', background: 'rgba(0,0,0,0.1)', marginTop: '0.5rem' }}>
-                                        <h5 style={{ margin: '0 0 0.3rem 0', fontSize: '0.8rem', color: 'var(--primary)' }}>{t('lbl_emergency_contact')}</h5>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.3rem', fontSize: '0.78rem' }}>
-                                          <p style={{ margin: 0 }}><strong>氏名:</strong> {member.emergency_name || '-'}</p>
-                                          <p style={{ margin: 0 }}><strong>郵便番号:</strong> {member.emergency_zip || '-'}</p>
-                                          <p style={{ margin: 0, gridColumn: 'span 2' }}><strong>住所:</strong> {member.emergency_address || '-'}</p>
-                                          <p style={{ margin: 0 }}><strong>電話:</strong> {member.emergency_phone || '-'}</p>
+              {/* Filter and Search Bar */}
+              <div className="modern-filter-bar">
+                <div className="modern-filter-row">
+                  <div className="modern-search-wrapper">
+                    <span className="modern-search-icon">🔍</span>
+                    <input
+                      data-testid="modern-search-input"
+                      type="text"
+                      className="modern-search-input"
+                      placeholder={lang === 'ja' ? '氏名、かな、メール、電話番号、郵便番号、IDで検索...' : 'Search by name, kana, email, phone, postal, ID...'}
+                      value={modernSearchQuery}
+                      onChange={e => setModernSearchQuery(e.target.value)}
+                    />
+                    {modernSearchQuery && (
+                      <button
+                        className="modern-search-clear"
+                        onClick={() => setModernSearchQuery('')}
+                        title={lang === 'ja' ? '検索をクリア' : 'Clear search'}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+
+                  <select
+                    data-testid="modern-select-dept"
+                    className="modern-filter-select"
+                    value={modernSearchDept}
+                    onChange={e => setModernSearchDept(e.target.value)}
+                  >
+                    <option value="">{lang === 'ja' ? 'すべての所属部課' : 'All Departments'}</option>
+                    <option value="地域支援部">地域支援部</option>
+                    <option value="介護福祉部">介護福祉部</option>
+                    <option value="総務管理部">総務管理部</option>
+                  </select>
+
+                  <select
+                    data-testid="modern-select-status"
+                    className="modern-filter-select"
+                    value={modernSearchStatus}
+                    onChange={e => setModernSearchStatus(e.target.value)}
+                  >
+                    <option value="">{lang === 'ja' ? 'すべてのステータス' : 'All Statuses'}</option>
+                    <option value="active">{lang === 'ja' ? '現役 (Active)' : 'Active'}</option>
+                    <option value="inactive">{lang === 'ja' ? '脱退者 (Inactive)' : 'Inactive'}</option>
+                  </select>
+
+                  <select
+                    data-testid="modern-select-living"
+                    className="modern-filter-select"
+                    value={modernSearchLiving}
+                    onChange={e => setModernSearchLiving(e.target.value)}
+                  >
+                    <option value="">{lang === 'ja' ? '存命・ご逝去すべて' : 'Living & Deceased'}</option>
+                    <option value="living">{lang === 'ja' ? '存命のみ' : 'Living Only'}</option>
+                    <option value="deceased">{lang === 'ja' ? 'ご逝去のみ' : 'Deceased Only'}</option>
+                  </select>
+
+                  <select
+                    data-testid="modern-select-sort"
+                    className="modern-filter-select"
+                    value={modernSortKey}
+                    onChange={e => setModernSortKey(e.target.value)}
+                  >
+                    <option value="id-asc">{lang === 'ja' ? 'ID 昇順' : 'ID Ascending'}</option>
+                    <option value="id-desc">{lang === 'ja' ? 'ID 降順' : 'ID Descending'}</option>
+                    <option value="name-asc">{lang === 'ja' ? '五十音順 (昇順)' : 'Name A-Z'}</option>
+                    <option value="name-desc">{lang === 'ja' ? '五十音順 (降順)' : 'Name Z-A'}</option>
+                    <option value="join-asc">{lang === 'ja' ? '加入日 古い順' : 'Join Date Oldest'}</option>
+                    <option value="join-desc">{lang === 'ja' ? '加入日 新しい順' : 'Join Date Newest'}</option>
+                  </select>
+                </div>
+
+                {/* Active Filters List */}
+                {(modernSearchQuery || modernSearchDept || modernSearchStatus || modernSearchLiving) && (
+                  <div className="modern-active-filters">
+                    <span style={{ color: 'var(--text-muted)' }}>{lang === 'ja' ? '適用中のフィルター:' : 'Active Filters:'}</span>
+                    {modernSearchQuery && (
+                      <span className="modern-filter-badge">
+                        {lang === 'ja' ? `キーワード: "${modernSearchQuery}"` : `Query: "${modernSearchQuery}"`}
+                        <button className="modern-filter-badge-clear" onClick={() => setModernSearchQuery('')}>×</button>
+                      </span>
+                    )}
+                    {modernSearchDept && (
+                      <span className="modern-filter-badge">
+                        {modernSearchDept}
+                        <button className="modern-filter-badge-clear" onClick={() => setModernSearchDept('')}>×</button>
+                      </span>
+                    )}
+                    {modernSearchStatus && (
+                      <span className="modern-filter-badge">
+                        {modernSearchStatus === 'active' ? (lang === 'ja' ? '現役' : 'Active') : (lang === 'ja' ? '脱退者' : 'Inactive')}
+                        <button className="modern-filter-badge-clear" onClick={() => setModernSearchStatus('')}>×</button>
+                      </span>
+                    )}
+                    {modernSearchLiving && (
+                      <span className="modern-filter-badge">
+                        {modernSearchLiving === 'living' ? (lang === 'ja' ? '存命' : 'Living') : (lang === 'ja' ? 'ご逝去' : 'Deceased')}
+                        <button className="modern-filter-badge-clear" onClick={() => setModernSearchLiving('')}>×</button>
+                      </span>
+                    )}
+                    <button
+                      className="modern-filter-clear-all"
+                      onClick={() => {
+                        setModernSearchQuery('')
+                        setModernSearchDept('')
+                        setModernSearchStatus('')
+                        setModernSearchLiving('')
+                      }}
+                    >
+                      {lang === 'ja' ? 'すべてクリア' : 'Clear All'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {filteredAndSortedMembers.length === 0 ? (
+                <div className="modern-empty-state">
+                  <div className="modern-empty-icon">🔍</div>
+                  <div className="modern-empty-title">
+                    {lang === 'ja' ? '一致する組合員が見つかりません' : 'No matching members found'}
+                  </div>
+                  <div className="modern-empty-desc">
+                    {lang === 'ja' 
+                      ? '検索キーワードやフィルター条件を変更してもう一度お試しください。' 
+                      : 'Try adjusting your search terms or filter criteria to find what you are looking for.'}
+                  </div>
+                  <button
+                    className="btn-secondary"
+                    onClick={() => {
+                      setModernSearchQuery('')
+                      setModernSearchDept('')
+                      setModernSearchStatus('')
+                      setModernSearchLiving('')
+                    }}
+                    style={{ display: 'inline-block', width: 'auto' }}
+                  >
+                    {lang === 'ja' ? 'すべてのフィルターをリセット' : 'Reset All Filters'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>{t('th_id')}</th>
+                        <th>{t('ph_name')}</th>
+                        <th>{t('ph_email')}</th>
+                        <th>{t('th_join_date')}</th>
+                        <th>{t('th_status')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedMembers.map(member => {
+                        const memberContribs = contributions.filter(c => c.member_id === member.id);
+                        const totalCapital = memberContribs.reduce((sum, c) => sum + Number(c.amount), 0);
+                        const isExpanded = expandedMemberId === member.id;
+                        const isEditing = editingMemberId === member.id;
+                        return (
+                          <Fragment key={member.id}>
+                            <tr data-testid={`member-row-${member.id}`} onClick={() => toggleExpand(member.id)} className={`clickable-row ${isExpanded ? 'expanded-active' : ''}`}>
+                              <td>#{member.id}</td>
+                              <td><strong>{member.name}</strong></td>
+                              <td className={!member.email ? 'text-muted' : ''}>{member.email || '-'}</td>
+                              <td className={!member.join_date ? 'text-muted' : ''}>{member.join_date || '-'}</td>
+                              <td>
+                                <span className={'status-badge ' + member.status}>{member.status === 'active' ? t('status_active') : t('status_inactive')}</span>
+                                {!(member.is_living === 1 || member.is_living === true) && <span className={'status-badge inactive'} style={{ marginLeft: '0.5rem' }}>{t('status_deceased')}</span>}
+                              </td>
+                            </tr>
+                            {isExpanded && (
+                              <tr className="expanded-row-container">
+                                <td colSpan={5} style={{ padding: 0, borderBottom: '2px solid var(--primary)' }}>
+                                  <div className="expanded-content">
+                                    {isEditing ? (
+                                      <form className="profile-edit-form" onSubmit={handleUpdateMember}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <input aria-label={t('ph_name')} type="text" placeholder={t('ph_name')} required value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} onFocus={() => setActiveModernFocusField('name')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_email')} type="email" placeholder={t('ph_email_optional')} value={editFormData.email || ''} onChange={e => setEditFormData({ ...editFormData, email: e.target.value })} onFocus={() => setActiveModernFocusField('email')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_kananame')} type="text" placeholder={t('ph_kananame_optional')} value={editFormData.kananame || ''} onChange={e => setEditFormData({ ...editFormData, kananame: e.target.value })} onFocus={() => setActiveModernFocusField('kananame')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <select aria-label={t('lbl_gender')} value={editFormData.gender || ''} onChange={e => setEditFormData({ ...editFormData, gender: e.target.value })} onFocus={() => setActiveModernFocusField('gender')} onBlur={() => setActiveModernFocusField(null)}>
+                                              <option value="">{t('lbl_gender')}</option>
+                                              <option value="1">{t('lbl_gender_male')}</option>
+                                              <option value="2">{t('lbl_gender_female')}</option>
+                                              <option value="0">{t('lbl_gender_other')}</option>
+                                            </select>
+                                            <input aria-label={t('ph_dob')} type="date" value={editFormData.dob || ''} onChange={e => setEditFormData({ ...editFormData, dob: e.target.value })} onFocus={() => setActiveModernFocusField('dob')} onBlur={() => setActiveModernFocusField(null)} />
+                                          </div>
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <input aria-label={t('ph_postal')} type="text" placeholder={t('ph_postal')} value={editFormData.postal || ''} onChange={e => setEditFormData({ ...editFormData, postal: e.target.value })} onFocus={() => setActiveModernFocusField('postal')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_address')} type="text" placeholder={t('ph_address')} value={editFormData.address || ''} onChange={e => setEditFormData({ ...editFormData, address: e.target.value })} onFocus={() => setActiveModernFocusField('address')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_address2_optional')} type="text" placeholder={t('ph_address2_optional')} value={editFormData.address2 || ''} onChange={e => setEditFormData({ ...editFormData, address2: e.target.value })} onFocus={() => setActiveModernFocusField('address2')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_phone')} type="text" placeholder={t('ph_phone')} value={editFormData.phone || ''} onChange={e => setEditFormData({ ...editFormData, phone: e.target.value })} onFocus={() => setActiveModernFocusField('phone')} onBlur={() => setActiveModernFocusField(null)} />
+                                          </div>
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <input aria-label={t('ph_district')} type="text" placeholder={t('ph_district')} value={editFormData.district || ''} onChange={e => setEditFormData({ ...editFormData, district: e.target.value })} onFocus={() => setActiveModernFocusField('district')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <select aria-label={t('lbl_department')} value={editFormData.department || ''} onChange={e => setEditFormData({ ...editFormData, department: e.target.value })} onFocus={() => setActiveModernFocusField('department')} onBlur={() => setActiveModernFocusField(null)}>
+                                              <option value="地域支援部">地域支援部</option>
+                                              <option value="介護福祉部">介護福祉部</option>
+                                              <option value="総務管理部">総務管理部</option>
+                                            </select>
+                                            <select aria-label={t('ph_delivery')} value={editFormData.delivery || ''} onChange={e => setEditFormData({ ...editFormData, delivery: e.target.value })} onFocus={() => setActiveModernFocusField('delivery')} onBlur={() => setActiveModernFocusField(null)}>
+                                              <option value="11">送付先11</option>
+                                              <option value="12">送付先12</option>
+                                              <option value="13">送付先13</option>
+                                              <option value="14">送付先14</option>
+                                            </select>
+                                            <input aria-label={t('th_join_date')} type="date" value={editFormData.join_date || ''} onChange={e => setEditFormData({ ...editFormData, join_date: e.target.value })} onFocus={() => setActiveModernFocusField('join_date')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_quit_date')} type="date" value={editFormData.quit_date || ''} onChange={e => setEditFormData({ ...editFormData, quit_date: e.target.value })} onFocus={() => setActiveModernFocusField('quit_date')} onBlur={() => setActiveModernFocusField(null)} />
+                                          </div>
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <input aria-label={t('ph_emergency_name')} type="text" placeholder={t('ph_emergency_name_optional')} value={editFormData.emergency_name || ''} onChange={e => setEditFormData({ ...editFormData, emergency_name: e.target.value })} onFocus={() => setActiveModernFocusField('emergency_name')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_emergency_zip')} type="text" placeholder={t('ph_emergency_zip_optional')} value={editFormData.emergency_zip || ''} onChange={e => setEditFormData({ ...editFormData, emergency_zip: e.target.value })} onFocus={() => setActiveModernFocusField('emergency_zip')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_emergency_address')} type="text" placeholder={t('ph_emergency_address_optional')} value={editFormData.emergency_address || ''} onChange={e => setEditFormData({ ...editFormData, emergency_address: e.target.value })} onFocus={() => setActiveModernFocusField('emergency_address')} onBlur={() => setActiveModernFocusField(null)} />
+                                            <input aria-label={t('ph_emergency_phone')} type="text" placeholder={t('ph_emergency_phone_optional')} value={editFormData.emergency_phone || ''} onChange={e => setEditFormData({ ...editFormData, emergency_phone: e.target.value })} onFocus={() => setActiveModernFocusField('emergency_phone')} onBlur={() => setActiveModernFocusField(null)} />
+                                          </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                                          <input aria-label={t('ph_remarks')} type="text" placeholder={t('ph_remarks_optional')} value={editFormData.remarks || ''} onChange={e => setEditFormData({ ...editFormData, remarks: e.target.value })} onFocus={() => setActiveModernFocusField('remarks')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 1 }} />
+                                          <input aria-label={t('ph_hope')} type="text" placeholder={t('ph_hope_optional')} value={editFormData.hope || ''} onChange={e => setEditFormData({ ...editFormData, hope: e.target.value })} onFocus={() => setActiveModernFocusField('hope')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 1 }} />
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                          <div style={{ display: 'flex', gap: '1.5rem' }}>
+                                            <select aria-label={t('th_status')} value={editFormData.status} onChange={e => setEditFormData({ ...editFormData, status: e.target.value })} onFocus={() => setActiveModernFocusField('status')} onBlur={() => setActiveModernFocusField(null)}>
+                                              <option value="active">{t('status_active')}</option>
+                                              <option value="inactive">{t('status_inactive')}</option>
+                                            </select>
+                                            <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                              <input aria-label={t('lbl_deceased')} type="checkbox" checked={!editFormData.is_living} onChange={e => setEditFormData({ ...editFormData, is_living: !e.target.checked })} onFocus={() => setActiveModernFocusField('is_living')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
+                                              {t('lbl_deceased')}
+                                            </label>
+                                            <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                              <input aria-label={t('lbl_send_dm')} type="checkbox" checked={!!editFormData.send_dm} onChange={e => setEditFormData({ ...editFormData, send_dm: e.target.checked })} onFocus={() => setActiveModernFocusField('send_dm')} onBlur={() => setActiveModernFocusField(null)} style={{ flex: 'none', minWidth: 'auto', width: '1.2rem', height: '1.2rem' }} />
+                                              {t('lbl_send_dm')}
+                                            </label>
+                                          </div>
+                                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button type="button" className="btn-secondary" onClick={() => setEditingMemberId(null)}>{t('btn_cancel')}</button>
+                                            <button data-testid="btn-save-member" type="submit" className="btn-primary">{t('btn_save')}</button>
+                                          </div>
+                                        </div>
+                                      </form>
+                                    ) : (
+                                      <div className="expanded-profile-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+                                        <div className="ep-info">
+                                          <h4>{t('title_profile_details')}</h4>
+                                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.4rem 1rem', fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                                            <p><strong>かな:</strong> {member.kananame || '-'}</p>
+                                            <p><strong>性別:</strong> {member.gender === '1' ? t('lbl_gender_male') : (member.gender === '2' ? t('lbl_gender_female') : t('lbl_gender_other'))}</p>
+                                            <p><strong>生年月日:</strong> {member.dob || '-'}</p>
+                                            <p><strong>郵便番号:</strong> {member.postal || '-'}</p>
+                                            <p><strong>電話番号:</strong> {member.phone || '-'}</p>
+                                            <p><strong>メールアドレス:</strong> {member.email || '-'}</p>
+                                            <p><strong>学区:</strong> {member.district || '-'}</p>
+                                            <p><strong>送付先区分:</strong> {member.delivery || '-'}</p>
+                                            <p><strong>脱退日:</strong> {member.quit_date || '-'}</p>
+                                          </div>
+                                          <p style={{ margin: '0.5rem 0' }}><strong>{t('ph_address')}:</strong> <span className={!member.address ? 'text-muted' : ''}>{member.address || t('lbl_unregistered')}</span> {member.address2 || ''}</p>
+                                          <p style={{ margin: '0.5rem 0' }}><strong>{t('lbl_dm_allowed')}:</strong> <span className={`status-badge ${member.send_dm ? 'active' : 'inactive'}`}>{member.send_dm ? t('lbl_dm_yes') : t('lbl_dm_no')}</span></p>
+
+                                          <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '0.5rem', background: 'rgba(0,0,0,0.1)', marginTop: '0.5rem' }}>
+                                            <h5 style={{ margin: '0 0 0.3rem 0', fontSize: '0.8rem', color: 'var(--primary)' }}>{t('lbl_emergency_contact')}</h5>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.3rem', fontSize: '0.78rem' }}>
+                                              <p style={{ margin: 0 }}><strong>氏名:</strong> {member.emergency_name || '-'}</p>
+                                              <p style={{ margin: 0 }}><strong>郵便番号:</strong> {member.emergency_zip || '-'}</p>
+                                              <p style={{ margin: 0, gridColumn: 'span 2' }}><strong>住所:</strong> {member.emergency_address || '-'}</p>
+                                              <p style={{ margin: 0 }}><strong>電話:</strong> {member.emergency_phone || '-'}</p>
+                                            </div>
+                                          </div>
+
+                                          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem' }}><strong>記事:</strong> {member.remarks || '-'}</p>
+                                          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem' }}><strong>希望意見:</strong> {member.hope || '-'}</p>
+
+                                          <p style={{ marginTop: '1.2rem' }}><strong>{t('lbl_personal_capital')}</strong> <br /><span className="stat-number small" style={{ fontSize: '1.4rem' }}>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(totalCapital)}</span></p>
+                                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.8rem' }}>
+                                            <button data-testid={`btn-edit-member-${member.id}`} type="button" className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => { setEditFormData(member); setEditingMemberId(member.id); }}>{t('btn_edit')}</button>
+                                            <button data-testid={`btn-print-cert-${member.id}`} type="button" className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handlePrintCertificate(member, memberContribs)}>📄 {t('btn_print_cert')}</button>
+                                          </div>
+                                        </div>
+                                        <div className="ep-history">
+                                          <h4>{t('title_capital_history')}</h4>
+                                          {memberContribs.length > 0 ? (
+                                            <table className="data-table compact-table" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', overflow: 'hidden' }}>
+                                              <thead>
+                                                <tr>
+                                                  <th style={{ padding: '0.5rem 1rem' }}>{t('th_date')}</th>
+                                                  <th style={{ padding: '0.5rem 1rem' }}>{t('th_amount')}</th>
+                                                  <th style={{ padding: '0.5rem 1rem' }}>{t('th_notes')}</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                {memberContribs.map(c => (
+                                                  <tr key={c.id}>
+                                                    <td style={{ padding: '0.5rem 1rem' }}>{c.pay_date}</td>
+                                                    <td className="amount-cell" style={{ padding: '0.5rem 1rem' }}>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(Number(c.amount))}</td>
+                                                    <td className="notes-cell" style={{ padding: '0.5rem 1rem' }}>{c.notes || '-'}</td>
+                                                  </tr>
+                                                ))}
+                                              </tbody>
+                                            </table>
+                                          ) : (
+                                            <p className="empty-state" style={{ padding: '1rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>{t('msg_no_history')}</p>
+                                          )}
                                         </div>
                                       </div>
-
-                                      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem' }}><strong>記事:</strong> {member.remarks || '-'}</p>
-                                      <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem' }}><strong>希望意見:</strong> {member.hope || '-'}</p>
-
-                                      <p style={{ marginTop: '1.2rem' }}><strong>{t('lbl_personal_capital')}</strong> <br /><span className="stat-number small" style={{ fontSize: '1.4rem' }}>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(totalCapital)}</span></p>
-                                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.8rem' }}>
-                                        <button data-testid={`btn-edit-member-${member.id}`} type="button" className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => { setEditFormData(member); setEditingMemberId(member.id); }}>{t('btn_edit')}</button>
-                                        <button data-testid={`btn-print-cert-${member.id}`} type="button" className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handlePrintCertificate(member, memberContribs)}>📄 {t('btn_print_cert')}</button>
-                                      </div>
-                                    </div>
-                                    <div className="ep-history">
-                                      <h4>{t('title_capital_history')}</h4>
-                                      {memberContribs.length > 0 ? (
-                                        <table className="data-table compact-table" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', overflow: 'hidden' }}>
-                                          <thead>
-                                            <tr>
-                                              <th style={{ padding: '0.5rem 1rem' }}>{t('th_date')}</th>
-                                              <th style={{ padding: '0.5rem 1rem' }}>{t('th_amount')}</th>
-                                              <th style={{ padding: '0.5rem 1rem' }}>{t('th_notes')}</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {memberContribs.map(c => (
-                                              <tr key={c.id}>
-                                                <td style={{ padding: '0.5rem 1rem' }}>{c.pay_date}</td>
-                                                <td className="amount-cell" style={{ padding: '0.5rem 1rem' }}>{new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(Number(c.amount))}</td>
-                                                <td className="notes-cell" style={{ padding: '0.5rem 1rem' }}>{c.notes || '-'}</td>
-                                              </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
-                                      ) : (
-                                        <p className="empty-state" style={{ padding: '1rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>{t('msg_no_history')}</p>
-                                      )}
-                                    </div>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </Fragment>
-                    )
-                  })}
-                  {members.length === 0 && <tr><td colSpan={5} className="empty-state">{t('msg_no_members')}</td></tr>}
-                </tbody>
-              </table>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+
+                  {/* Pagination bar */}
+                  <div className="modern-pagination">
+                    <div className="modern-pagination-info">
+                      {lang === 'ja'
+                        ? `全 ${filteredAndSortedMembers.length} 件中 ${(modernCurrentPage - 1) * modernItemsPerPage + 1}〜${Math.min(modernCurrentPage * modernItemsPerPage, filteredAndSortedMembers.length)} 件を表示`
+                        : `Showing ${(modernCurrentPage - 1) * modernItemsPerPage + 1} to ${Math.min(modernCurrentPage * modernItemsPerPage, filteredAndSortedMembers.length)} of ${filteredAndSortedMembers.length} members`}
+                      
+                      <span style={{ marginLeft: '1.5rem' }}>
+                        {lang === 'ja' ? '表示件数:' : 'Show:'}
+                        <select
+                          value={modernItemsPerPage}
+                          onChange={e => {
+                            setModernItemsPerPage(Number(e.target.value))
+                            setModernCurrentPage(1)
+                          }}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            color: '#fff',
+                            marginLeft: '0.5rem',
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="20" style={{ color: '#000' }}>20</option>
+                          <option value="50" style={{ color: '#000' }}>50</option>
+                          <option value="100" style={{ color: '#000' }}>100</option>
+                        </select>
+                      </span>
+                    </div>
+
+                    <div className="modern-pagination-controls">
+                      <button
+                        className="modern-pagination-btn"
+                        onClick={() => setModernCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={modernCurrentPage === 1}
+                        title={lang === 'ja' ? '前へ' : 'Previous'}
+                      >
+                        &lt;
+                      </button>
+                      
+                      {(() => {
+                        const pages = []
+                        const maxVisiblePages = 5
+                        
+                        let startPage = Math.max(1, modernCurrentPage - Math.floor(maxVisiblePages / 2))
+                        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+                        
+                        if (endPage - startPage + 1 < maxVisiblePages) {
+                          startPage = Math.max(1, endPage - maxVisiblePages + 1)
+                        }
+                        
+                        if (startPage > 1) {
+                          pages.push(
+                            <button
+                              key={1}
+                              className={`modern-pagination-btn ${modernCurrentPage === 1 ? 'active' : ''}`}
+                              onClick={() => setModernCurrentPage(1)}
+                            >
+                              1
+                            </button>
+                          )
+                          if (startPage > 2) {
+                            pages.push(<span key="dots-start" className="modern-pagination-dots">...</span>)
+                          }
+                        }
+                        
+                        for (let i = startPage; i <= endPage; i++) {
+                          pages.push(
+                            <button
+                              key={i}
+                              className={`modern-pagination-btn ${modernCurrentPage === i ? 'active' : ''}`}
+                              onClick={() => setModernCurrentPage(i)}
+                            >
+                              {i}
+                            </button>
+                          )
+                        }
+                        
+                        if (endPage < totalPages) {
+                          if (endPage < totalPages - 1) {
+                            pages.push(<span key="dots-end" className="modern-pagination-dots">...</span>)
+                          }
+                          pages.push(
+                            <button
+                              key={totalPages}
+                              className={`modern-pagination-btn ${modernCurrentPage === totalPages ? 'active' : ''}`}
+                              onClick={() => setModernCurrentPage(totalPages)}
+                            >
+                              {totalPages}
+                            </button>
+                          )
+                        }
+                        
+                        return pages
+                      })()}
+
+                      <button
+                        className="modern-pagination-btn"
+                        onClick={() => setModernCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={modernCurrentPage === totalPages}
+                        title={lang === 'ja' ? '次へ' : 'Next'}
+                      >
+                        &gt;
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
